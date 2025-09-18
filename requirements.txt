@@ -1,0 +1,5 @@
+# Website dependencies (for local development)
+flask==3.0.0
+
+# Webhook dependencies
+functions-framework==3.5.0
