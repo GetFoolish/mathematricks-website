@@ -1,148 +1,140 @@
-# Mathematricks Website Deployment Guide
+# Mathematricks Capital - Free Deployment Guide
 
-## Prerequisites
-- Google Cloud CLI (gcloud) installed and authenticated
-- Google Cloud Project with billing enabled
-- App Engine API enabled
+Deploy your hedge fund website and TradingView webhook completely free using Netlify + Vercel.
 
-## Website Deployment to Google App Engine
+## 🚀 Quick Deployment
 
-### 1. Set Your Project ID
+### Step 1: Deploy Website to Netlify
+1. Go to [netlify.com](https://netlify.com) and sign up
+2. Click "New site from Git"
+3. Connect your GitHub account
+4. Select `vandanchopra/mathematricks-website` repository
+5. Deploy settings:
+   - **Build command**: Leave empty (static HTML)
+   - **Publish directory**: `.` (root)
+6. Click "Deploy site"
+
+### Step 2: Deploy Webhook to Vercel
+1. Go to [vercel.com](https://vercel.com) and sign up
+2. Click "New Project"
+3. Import `vandanchopra/mathematricks-website` repository
+4. Framework: "Other"
+5. Add environment variable:
+   - **Name**: `WEBHOOK_PASSPHRASE`
+   - **Value**: `yahoo123` (or your secure passphrase)
+6. Click "Deploy"
+
+## 🌐 Custom Domain Setup (mathematricks.capital)
+
+### For Website (Netlify):
+1. **Buy domain** `mathematricks.capital`
+2. **In Netlify dashboard**:
+   - Go to Site settings > Domain management
+   - Click "Add custom domain"
+   - Enter `mathematricks.capital`
+3. **Update DNS at your registrar**:
+   ```
+   Type: A
+   Name: @
+   Value: 75.2.60.5
+
+   Type: CNAME
+   Name: www
+   Value: your-site.netlify.app
+   ```
+
+### For Webhook (Vercel):
+1. **In Vercel dashboard**:
+   - Go to Project settings > Domains
+   - Add `webhook.mathematricks.capital`
+2. **Update DNS**:
+   ```
+   Type: CNAME
+   Name: webhook
+   Value: your-project.vercel.app
+   ```
+
+## 🎯 Final URLs
+- **Website**: `https://mathematricks.capital`
+- **Webhook**: `https://webhook.mathematricks.capital`
+
+## 🔧 Environment Variables
+
+### Netlify (none needed for static site)
+- No environment variables required
+
+### Vercel:
+- `WEBHOOK_PASSPHRASE`: Your secure webhook password
+
+## 💰 Cost Breakdown
+- **Netlify**: Free (100GB bandwidth/month)
+- **Vercel**: Free (100GB bandwidth/month)
+- **Domain**: ~$12/year
+- **SSL**: Free (automatic)
+- **Total**: ~$12/year
+
+## 🔒 Security Features
+- ✅ Automatic HTTPS
+- ✅ Security headers configured
+- ✅ CORS protection
+- ✅ Passphrase authentication
+- ✅ Request validation
+
+## 📊 Monitoring
+- **Netlify**: Built-in analytics
+- **Vercel**: Function logs and metrics
+- **Both**: Real-time deployment logs
+
+## 🧪 Testing Your Deployment
+
+### Test Website:
 ```bash
-export PROJECT_ID="your-project-id-here"
-gcloud config set project $PROJECT_ID
+curl -I https://mathematricks.capital
 ```
 
-### 2. Enable Required APIs
+### Test Webhook:
 ```bash
-gcloud services enable appengine.googleapis.com
+curl -X POST https://webhook.mathematricks.capital \
+  -H "Content-Type: application/json" \
+  -d '{
+    "passphrase": "yahoo123",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "signal": {
+      "ticker": "AAPL",
+      "price": 150.25,
+      "action": "BUY",
+      "volume_24h": 50000000
+    }
+  }'
 ```
 
-### 3. Initialize App Engine (First Time Only)
-```bash
-gcloud app create --region=us-east4
-```
+## 🚀 Automatic Deployments
 
-### 4. Deploy the Website
-```bash
-# From the project root directory
-gcloud app deploy app.yaml
-```
+Both services automatically deploy when you push to your main branch:
+- **Website updates** → Netlify redeploys
+- **Webhook updates** → Vercel redeploys
 
-### 5. View Your Website
-```bash
-gcloud app browse
-```
+## 📈 Performance
+- **Global CDN**: Both services use worldwide CDNs
+- **99.9% uptime**: Enterprise-grade reliability
+- **Fast loading**: Optimized for performance
+- **Auto-scaling**: Handles traffic spikes automatically
 
-Your website will be available at: `https://your-project-id.ue.r.appspot.com`
+## 🆘 Support
+- **Netlify**: Excellent documentation and community
+- **Vercel**: 24/7 support and detailed logs
+- **Both**: Status pages for monitoring uptime
 
-## Alternative: Deploy to Cloud Run (Recommended for Better Performance)
+---
 
-### 1. Create Dockerfile
-```dockerfile
-FROM nginx:alpine
-COPY index.html /usr/share/nginx/html/
-COPY . /usr/share/nginx/html/
-EXPOSE 8080
-CMD ["nginx", "-g", "daemon off;"]
-```
+## 🎉 Congratulations!
 
-### 2. Build and Deploy
-```bash
-# Build the container
-gcloud builds submit --tag gcr.io/$PROJECT_ID/mathematricks-website
+Your Mathematricks Capital website is now deployed with:
+- ✅ Professional hedge fund website
+- ✅ Secure TradingView webhook
+- ✅ Custom domain ready
+- ✅ Automatic deployments
+- ✅ Enterprise-grade performance
+- ✅ $0 hosting costs
 
-# Deploy to Cloud Run
-gcloud run deploy mathematricks-website \
-  --image gcr.io/$PROJECT_ID/mathematricks-website \
-  --platform managed \
-  --region us-east4 \
-  --allow-unauthenticated \
-  --port 8080
-```
-
-## Custom Domain Setup (Optional)
-
-### 1. Map Custom Domain
-```bash
-gcloud app domain-mappings create your-domain.com
-```
-
-### 2. Verify Domain Ownership
-Follow the instructions provided by the command above to verify domain ownership through your DNS provider.
-
-### 3. Update DNS Records
-Add the DNS records provided by Google Cloud to your domain registrar.
-
-## SSL Certificate
-Google Cloud automatically provides SSL certificates for both App Engine and Cloud Run deployments.
-
-## Monitoring and Analytics
-
-### Enable Monitoring
-```bash
-gcloud services enable monitoring.googleapis.com
-gcloud services enable logging.googleapis.com
-```
-
-### View Logs
-```bash
-# App Engine logs
-gcloud app logs tail -s default
-
-# Cloud Run logs (if using Cloud Run)
-gcloud logs tail "resource.type=cloud_run_revision"
-```
-
-## Performance Optimization
-
-1. **Enable Cloud CDN** (for Cloud Run):
-```bash
-gcloud compute backend-services create mathematricks-backend \
-  --global \
-  --load-balancing-scheme=EXTERNAL
-```
-
-2. **Enable Compression**: Already configured in the HTML (minified CSS/JS)
-
-3. **Monitor Performance**: Use Google PageSpeed Insights to monitor website performance
-
-## Cost Optimization
-
-- **App Engine**: Free tier includes 28 frontend instance hours per day
-- **Cloud Run**: Free tier includes 2 million requests per month
-- **Bandwidth**: First 1GB of egress per month is free
-
-## Security Features
-
-1. **HTTPS by Default**: All traffic is automatically encrypted
-2. **DDoS Protection**: Built-in protection against DDoS attacks
-3. **Identity-Aware Proxy**: Can be enabled for additional security if needed
-
-## Backup and Versioning
-
-### Create Version Backup
-```bash
-gcloud app versions list
-gcloud app deploy --version=backup-$(date +%Y%m%d)
-```
-
-### Rollback if Needed
-```bash
-gcloud app versions list
-gcloud app services set-traffic default --splits=VERSION_ID=1
-```
-
-## Troubleshooting
-
-- **Deployment Fails**: Check that billing is enabled and APIs are activated
-- **404 Errors**: Verify app.yaml routing configuration
-- **Slow Loading**: Enable Cloud CDN and optimize images
-- **SSL Issues**: Ensure custom domain DNS is properly configured
-
-## Next Steps
-
-1. **Analytics**: Add Google Analytics to track visitor behavior
-2. **Contact Form**: Integrate with email service (see email setup guide)
-3. **A/B Testing**: Use Google Optimize for testing different versions
-4. **SEO**: Submit sitemap to Google Search Console
+**Ready to receive TradingView signals and showcase your hedge fund professionally!**
