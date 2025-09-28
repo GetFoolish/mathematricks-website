@@ -27,10 +27,14 @@ class SignalSender:
         epoch_time = int(now.timestamp())
 
         signal_data = {
+            # Required Pydantic fields
+            "strategy_name": "Default Strategy",  # Required
+            "signal_sent_EPOCH": epoch_time,      # Required
+            "signalID": signal_id,                # Required
+
+            # Optional fields
             "passphrase": self.passphrase,
             "timestamp": now.isoformat(),
-            "epoch_time": epoch_time,
-            "signal_id": signal_id,
             "signal": {
                 "ticker": ticker,
                 "price": price,

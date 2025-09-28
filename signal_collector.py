@@ -54,8 +54,10 @@ class WebhookSignalCollector:
         try:
             print("🔄 Checking for missed signals from MongoDB...")
 
-            # Build query filter
-            query_filter = {}
+            # Build query filter - only get signals not already processed
+            query_filter = {
+                'signal_processed': {'$ne': True}  # Only get unprocessed signals
+            }
             if self.last_signal_timestamp:
                 try:
                     since_dt = parser.parse(self.last_signal_timestamp)
@@ -63,7 +65,7 @@ class WebhookSignalCollector:
                 except Exception as e:
                     print(f"⚠️ Invalid timestamp format: {self.last_signal_timestamp}")
 
-            # Query MongoDB directly
+            # Query MongoDB directly for unprocessed signals
             missed_signals_cursor = self.mongodb_collection.find(query_filter).sort('received_at', 1)
             missed_signals = list(missed_signals_cursor)
 
@@ -92,6 +94,9 @@ class WebhookSignalCollector:
                         original_id=signal_doc.get('signal_id')
                     )
 
+                    # Mark signal as processed (async, low priority)
+                    self.mark_signal_processed(signal_doc['_id'])
+
                 print(f"✅ Successfully caught up with {len(missed_signals)} signals from MongoDB")
             else:
                 print("✅ No missed signals found in MongoDB")
@@ -99,6 +104,22 @@ class WebhookSignalCollector:
         except PyMongoError as e:
             print(f"❌ Error fetching from MongoDB: {e}")
             print("💡 Check MongoDB connection or restart collector")
+
+    def mark_signal_processed(self, signal_id):
+        """Mark a signal as processed in MongoDB (async, low priority)"""
+        if self.mongodb_collection is None:
+            return
+
+        try:
+            # Use update_one to set the processed flag
+            self.mongodb_collection.update_one(
+                {'_id': signal_id},
+                {'$set': {'signal_processed': True}},
+                upsert=False
+            )
+        except PyMongoError:
+            # Silently fail - this is low priority and shouldn't interfere with signal processing
+            pass
 
     def watch_for_new_signals(self):
         """Watch for new signals using MongoDB Change Streams"""
@@ -151,6 +172,9 @@ class WebhookSignalCollector:
                             is_catchup=False,
                             original_id=new_document.get('signal_id')
                         )
+
+                        # Mark signal as processed (safe since Change Stream only watches INSERTs)
+                        self.mark_signal_processed(new_document['_id'])
 
                     except Exception as e:
                         print(f"⚠️ Error processing change stream event: {e}")

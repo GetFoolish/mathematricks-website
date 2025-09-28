@@ -8,10 +8,26 @@ import urllib.request
 import ssl
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
+from pydantic import BaseModel, ValidationError
+from typing import Optional, Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Pydantic model for signal validation
+class SignalRequest(BaseModel):
+    strategy_name: str  # Required
+    signal_sent_EPOCH: int  # Required
+    signalID: str  # Required
+
+    # Optional fields - anything else is allowed
+    passphrase: Optional[str] = None
+    timestamp: Optional[str] = None
+    signal: Optional[Any] = None
+
+    class Config:
+        extra = "allow"  # Allow additional fields not defined in the model
 
 # MongoDB connection functions
 def get_mongodb_client():
@@ -110,6 +126,14 @@ class handler(BaseHTTPRequestHandler):
             except json.JSONDecodeError as e:
                 logger.error(f"JSON decode error: {str(e)}")
                 self.send_error_response(400, 'Invalid JSON format')
+                return
+
+            # Validate required fields with Pydantic
+            try:
+                validated_signal = SignalRequest(**request_json)
+            except ValidationError as e:
+                logger.error(f"Validation error: {str(e)}")
+                self.send_error_response(400, f'Invalid request format: {str(e)}')
                 return
 
             # Validate passphrase
