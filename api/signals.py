@@ -82,41 +82,6 @@ def store_signal(signal_data):
         logger.error(f"Failed to store signal in MongoDB: {e}")
         return None
 
-def forward_to_local_collector(signal_data):
-    """Forward signal to local collector via Cloudflare tunnel"""
-    local_collector_url = os.environ.get('LOCAL_COLLECTOR_URL')
-
-    if not local_collector_url:
-        logger.info("No local collector URL configured - skipping forward")
-        return False
-
-    try:
-        # Prepare forwarding payload
-        forward_payload = {
-            'source': 'vercel_forwarded',
-            'forwarded_at': datetime.now(timezone.utc).isoformat(),
-            'original_signal': signal_data
-        }
-
-        # Create request
-        req = urllib.request.Request(
-            local_collector_url,
-            data=json.dumps(forward_payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'}
-        )
-
-        # Forward with timeout
-        with urllib.request.urlopen(req, timeout=5) as response:
-            if response.status == 200:
-                logger.info(f"Successfully forwarded signal to local collector")
-                return True
-            else:
-                logger.warning(f"Local collector returned status: {response.status}")
-                return False
-
-    except Exception as e:
-        logger.warning(f"Failed to forward to local collector: {str(e)}")
-        return False
 
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -176,11 +141,8 @@ class handler(BaseHTTPRequestHandler):
             action = signal.get('action', 'UNKNOWN')
             volume_24h = signal.get('volume_24h', 0)
 
-            # Store signal for temporary storage
+            # Store signal in MongoDB
             stored_signal = store_signal(request_json)
-
-            # Forward to local collector (if configured and reachable)
-            forwarded = forward_to_local_collector(request_json)
 
             # Log the received signal data
             signal_data = {
@@ -190,8 +152,7 @@ class handler(BaseHTTPRequestHandler):
                 'action': action,
                 'volume_24h': volume_24h,
                 'received_at': datetime.now(timezone.utc).isoformat(),
-                'stored_id': stored_signal['id'],
-                'forwarded_to_local': forwarded
+                'stored_id': stored_signal.get('_id', 'unknown') if stored_signal else 'failed'
             }
 
             logger.info(f"TradingView Signal Received: {json.dumps(signal_data, indent=2)}")
