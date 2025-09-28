@@ -194,23 +194,10 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         """Handle GET requests - return basic service info"""
         try:
-            # Get signal count from MongoDB for status
-            collection = get_signals_collection()
-            signal_count = 0
-            if collection is not None:
-                try:
-                    signal_count = collection.count_documents({})
-                except PyMongoError:
-                    signal_count = "unavailable"
-
             response_data = {
-                'service': 'Mathematricks Capital Signal Receiver',
+                'service': 'Mathematricks Fund Signal Receiver',
                 'status': 'active',
-                'timestamp': datetime.now(timezone.utc).isoformat(),
-                'stored_signals': signal_count,
-                'database': 'MongoDB Atlas',
-                'endpoint': 'POST /api/signals - Send trading signals here',
-                'note': 'For signal retrieval, connect directly to MongoDB from your application'
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             self.send_json_response(200, response_data)
         except Exception as e:

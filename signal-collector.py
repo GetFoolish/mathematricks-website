@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
-import requests
 import json
 import time
 import datetime
 from dateutil import parser
-from typing import Dict, Any
-import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import urllib.parse
-import os
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
@@ -18,24 +13,14 @@ class WebhookSignalCollector:
         self.local_port = local_port
         self.collected_signals = []
         self.server = None
-        self.signals_file = "collected_signals.json"
         self.last_signal_timestamp = None
+        self.resume_token = None
         self.mongodb_url = mongodb_url or "mongodb+srv://vandan_db_user:pY3qmfZmpWqleff3@mathematricks-signalscl.bmgnpvs.mongodb.net/"
         self.mongodb_client = None
         self.mongodb_collection = None
 
         # Try to connect to MongoDB
         self.connect_to_mongodb()
-
-        # Load existing signals if file exists
-        self.load_signals()
-
-        # Determine last signal timestamp for catch-up mode
-        if self.collected_signals:
-            self.last_signal_timestamp = max(
-                signal.get('received_time', '')
-                for signal in self.collected_signals
-            )
 
     def connect_to_mongodb(self):
         """Connect to MongoDB Atlas"""
@@ -115,44 +100,104 @@ class WebhookSignalCollector:
             print(f"❌ Error fetching from MongoDB: {e}")
             print("💡 Check MongoDB connection or restart collector")
 
-    def load_signals(self):
-        """Load previously collected signals from JSON file"""
+    def watch_for_new_signals(self):
+        """Watch for new signals using MongoDB Change Streams"""
+        if self.mongodb_collection is None:
+            print("❌ MongoDB not available - cannot watch for new signals")
+            return
+
         try:
-            if os.path.exists(self.signals_file):
-                with open(self.signals_file, 'r') as f:
-                    data = json.load(f)
-                    self.collected_signals = data.get('signals', [])
-                    print(f"📂 Loaded {len(self.collected_signals)} existing signals from {self.signals_file}")
-            else:
-                print(f"📂 No existing signals file found. Starting fresh.")
+
+            # Set up change stream pipeline - only watch for inserts
+            pipeline = [
+                {'$match': {'operationType': 'insert'}}
+            ]
+
+            # Start watching with resume token if we have one
+            watch_options = {}
+            if self.resume_token:
+                watch_options['resume_after'] = self.resume_token
+                print(f"🔄 Resuming from previous position")
+
+            # Open change stream
+            with self.mongodb_collection.watch(pipeline, **watch_options) as stream:
+                print("✅ Change Stream connected - waiting for signals...")
+
+                for change in stream:
+                    try:
+                        # Update resume token for reconnection resilience
+                        self.resume_token = stream.resume_token
+
+                        # Extract the new document
+                        new_document = change['fullDocument']
+
+                        # Convert to our signal format
+                        received_time = new_document['received_at']
+                        if isinstance(received_time, str):
+                            received_time = parser.parse(received_time)
+
+                        # Reconstruct signal data from MongoDB format
+                        signal_data = {
+                            'timestamp': new_document.get('timestamp'),
+                            'signal_id': new_document.get('signal_id'),
+                            'epoch_time': new_document.get('epoch_time'),
+                            'signal': new_document.get('signal_data', {})
+                        }
+
+                        # Process as live signal
+                        self.process_signal(
+                            signal_data,
+                            received_time,
+                            is_catchup=False,
+                            original_id=new_document.get('signal_id')
+                        )
+
+                    except Exception as e:
+                        print(f"⚠️ Error processing change stream event: {e}")
+                        continue
+
+        except PyMongoError as e:
+            print(f"❌ Change Stream error: {e}")
+            print("🔄 Will retry connection...")
+            return False
         except Exception as e:
-            print(f"⚠️ Error loading signals file: {e}")
-            self.collected_signals = []
+            print(f"💥 Unexpected error in Change Stream: {e}")
+            return False
 
-    def save_signals(self):
-        """Save collected signals to JSON file"""
-        try:
-            # Convert datetime objects to strings for JSON serialization
-            signals_to_save = []
-            for signal in self.collected_signals:
-                signal_copy = signal.copy()
-                if isinstance(signal_copy['received_time'], datetime.datetime):
-                    signal_copy['received_time'] = signal_copy['received_time'].isoformat()
-                signals_to_save.append(signal_copy)
+        return True
 
-            data = {
-                'webhook_url': self.webhook_url,
-                'last_updated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                'total_signals': len(signals_to_save),
-                'signals': signals_to_save
-            }
+    def start_change_stream_with_retry(self):
+        """Start Change Stream with automatic retry logic"""
+        retry_count = 0
+        max_retries = 5
+        base_delay = 2
 
-            with open(self.signals_file, 'w') as f:
-                json.dump(data, f, indent=2)
+        while retry_count < max_retries:
+            try:
+                if self.watch_for_new_signals():
+                    # If we get here, the stream ended normally
+                    print("🔄 Change Stream ended, restarting...")
+                else:
+                    # Connection failed, implement exponential backoff
+                    retry_count += 1
+                    delay = base_delay * (2 ** retry_count)
+                    print(f"⏰ Retrying in {delay} seconds... (attempt {retry_count}/{max_retries})")
+                    time.sleep(delay)
 
-            print(f"💾 Saved {len(signals_to_save)} signals to {self.signals_file}")
-        except Exception as e:
-            print(f"❌ Error saving signals: {e}")
+            except KeyboardInterrupt:
+                print("\n🛑 Change Stream monitoring stopped by user")
+                break
+            except Exception as e:
+                retry_count += 1
+                delay = base_delay * (2 ** retry_count)
+                print(f"💥 Unexpected error: {e}")
+                print(f"⏰ Retrying in {delay} seconds... (attempt {retry_count}/{max_retries})")
+                time.sleep(delay)
+
+        if retry_count >= max_retries:
+            print(f"❌ Failed to establish stable Change Stream after {max_retries} attempts")
+            print("💡 Check MongoDB connection and restart collector")
+
 
 
     def calculate_delay(self, sent_timestamp: str, received_timestamp: datetime.datetime) -> float:
@@ -190,30 +235,25 @@ class WebhookSignalCollector:
         if timestamp != 'No timestamp':
             delay = self.calculate_delay(timestamp, received_time)
 
-        # Store signal (avoid duplicates for catch-up signals)
-        if not is_catchup:
-            signal_record = {
-                'id': signal_id,
-                'received_time': received_time,
-                'sent_timestamp': timestamp,
-                'delay_seconds': delay,
-                'signal': signal_data
-            }
-            self.collected_signals.append(signal_record)
-
-            # Save signals to file after each new signal
-            self.save_signals()
+        # Store signal in memory for display (no file saving)
+        signal_record = {
+            'id': signal_id,
+            'received_time': received_time,
+            'sent_timestamp': timestamp,
+            'delay_seconds': delay,
+            'signal': signal_data,
+            'is_catchup': is_catchup
+        }
+        self.collected_signals.append(signal_record)
 
         # Display signal information
-        signal_type = "📥 CATCHUP" if is_catchup else "🚨 LIVE"
-        print(f"\n{signal_type} SIGNAL #{signal_id}")
-        print(f"⏰ Received Time: {received_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}")
-        print(f"📤 Sent Time: {timestamp}")
+        signal_type = "📥 CATCHUP" if is_catchup else "🔥 REAL-TIME SIGNAL DETECTED!"
+        print(f"\n{signal_type}")
         if delay > 0:
             print(f"⚡ Delay: {delay:.3f} seconds")
         print(f"📊 Ticker: {ticker} | Action: {action} | Price: {price}")
         if is_catchup:
-            print(f"🔄 Caught up from Vercel storage")
+            print(f"🔄 Caught up from MongoDB storage")
         print("─" * 60)
 
     class SignalHandler(BaseHTTPRequestHandler):
@@ -290,43 +330,25 @@ class WebhookSignalCollector:
             pass
 
     def monitor_signals(self):
-        """Monitor webhook and start local collector"""
-        print(f"🔍 Mathematricks Capital Hybrid Signal Collector")
-        print(f"🌐 Production Webhook: {self.webhook_url}")
-        print(f"🏠 Local Collector: http://localhost:{self.local_port}")
-        print("💡 Hybrid mode: Catch-up + Live forwarding via Cloudflare Tunnel")
+        """Monitor signals using MongoDB Change Streams for real-time notifications"""
         print("🔥 Press Ctrl+C to stop monitoring")
         print("=" * 80)
 
         # PHASE 1: Catch-up mode - fetch any missed signals
         print("\n🔄 PHASE 1: Catch-up Mode")
         if self.mongodb_collection is not None:
-            print("📊 Using direct MongoDB connection for catch-up")
             self.fetch_missed_signals_from_mongodb()
         else:
-            print("❌ MongoDB connection failed - cannot fetch missed signals")
+            print("❌ MongoDB connection failed - cannot start monitoring")
             print("💡 Restart the collector to retry MongoDB connection")
+            return
 
-        # PHASE 2: Live mode - continuous monitoring
-        print("\n📡 PHASE 2: Live Mode - Monitoring signals")
-        print("💡 Signals are stored in MongoDB and retrieved via catch-up on restart")
+        # PHASE 2: Real-time mode - MongoDB Change Streams
+        print("\n📡 PHASE 2: Real-Time Mode - Change Streams")
 
         try:
-            while True:
-                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                # Test webhook availability
-                try:
-                    response = requests.get(self.webhook_url, timeout=5)
-                    webhook_status = "🟢 ONLINE" if response.status_code == 200 else f"🟡 STATUS {response.status_code}"
-                except requests.exceptions.RequestException:
-                    webhook_status = "🔴 OFFLINE"
-
-                # Test MongoDB connectivity
-                mongodb_status = "🟢 CONNECTED" if self.mongodb_collection is not None else "🔴 DISCONNECTED"
-
-                print(f"[{current_time}] 🌐 Webhook: {webhook_status} | 📊 MongoDB: {mongodb_status} | 📋 Local Signals: {len(self.collected_signals)}")
-                time.sleep(10)  # Check every 10 seconds
+            # Start Change Streams with retry logic
+            self.start_change_stream_with_retry()
 
         except KeyboardInterrupt:
             print("\n🛑 Signal monitoring stopped by user")
@@ -356,40 +378,29 @@ class WebhookSignalCollector:
                 print(f"⚡ Max Delay: {max(delays):.3f} seconds")
 
         print("\n🎯 System Architecture:")
-        print("📡 TradingView → Vercel Webhook → Cloudflare Tunnel → Local Collector")
-        print("🔄 Catch-up: Fetch missed signals from Vercel storage on startup")
-        print("⚡ Live: Receive real-time signals via Cloudflare forwarding")
+        print("📡 TradingView → Vercel Webhook → MongoDB → Change Streams → Local Collector")
+        print("🔄 Catch-up: Fetch missed signals from MongoDB on startup")
+        print("⚡ Live: Real-time notifications via MongoDB Change Streams")
 
         print("\n🧪 Test Commands:")
         print("\n# Send signal using Python sender:")
         print('python3 signal_sender.py --ticker AAPL --action BUY --price 150.25')
         print('python3 signal_sender.py --test-suite')
 
-        print("\n# Test Production Webhook (will be stored and forwarded):")
-        print(f'curl -X POST {self.webhook_url}/api/webhook \\')
+        print("\n# Test Production Webhook (will be stored in MongoDB):")
+        print(f'curl -X POST {self.webhook_url}/api/signals \\')
         print('  -H "Content-Type: application/json" \\')
         print('  -d \'{"passphrase": "yahoo123", "timestamp": "'+ datetime.datetime.now().isoformat() +'", "signal": {"ticker": "AAPL", "price": 150.25, "action": "BUY"}}\'')
 
-        print(f"\n# Get stored signals from Vercel:")
+        print(f"\n# Test webhook status:")
         print(f'curl -X GET {self.webhook_url}/api/signals')
-
-        print(f"\n# Test Local Collector Direct (bypass webhook):")
-        print(f'curl -X POST http://localhost:{self.local_port} \\')
-        print('  -H "Content-Type: application/json" \\')
-        print('  -d \'{"passphrase": "yahoo123", "timestamp": "'+ datetime.datetime.now().isoformat() +'", "signal": {"ticker": "TSLA", "price": 245.75, "action": "SELL"}}\'')
-
-        print(f"\n# Test via Cloudflare Tunnel (signals.mathematricks.fund):")
-        print(f'curl -X POST https://signals.mathematricks.fund \\')
-        print('  -H "Content-Type: application/json" \\')
-        print('  -d \'{"passphrase": "test123", "timestamp": "'+ datetime.datetime.now().isoformat() +'", "signal": {"ticker": "BTC", "price": 42000, "action": "BUY"}}\'')
         print("=" * 80)
 
 if __name__ == "__main__":
     webhook_url = "https://api.mathematricks.fund"
     collector = WebhookSignalCollector(webhook_url)
 
-    print("🚀 Starting Mathematricks Capital Webhook Signal Collector")
-    print("📡 This script monitors webhook availability and provides test commands")
+    print("🚀 Starting Mathematricks Fund Webhook Signal Collector")
     print()
 
     collector.monitor_signals()
