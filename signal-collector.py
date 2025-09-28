@@ -9,15 +9,23 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib.parse
 import os
+from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 
 class WebhookSignalCollector:
-    def __init__(self, webhook_url: str, local_port: int = 8888):
+    def __init__(self, webhook_url: str, local_port: int = 8888, mongodb_url: str = None):
         self.webhook_url = webhook_url
         self.local_port = local_port
         self.collected_signals = []
         self.server = None
         self.signals_file = "collected_signals.json"
         self.last_signal_timestamp = None
+        self.mongodb_url = mongodb_url or "mongodb+srv://vandan_db_user:pY3qmfZmpWqleff3@mathematricks-signalscl.bmgnpvs.mongodb.net/"
+        self.mongodb_client = None
+        self.mongodb_collection = None
+
+        # Try to connect to MongoDB
+        self.connect_to_mongodb()
 
         # Load existing signals if file exists
         self.load_signals()
@@ -28,6 +36,80 @@ class WebhookSignalCollector:
                 signal.get('received_time', '')
                 for signal in self.collected_signals
             )
+
+    def connect_to_mongodb(self):
+        """Connect to MongoDB Atlas"""
+        try:
+            self.mongodb_client = MongoClient(self.mongodb_url)
+            # Test connection
+            self.mongodb_client.admin.command('ping')
+
+            # Get collection
+            db = self.mongodb_client['mathematricks_signals']
+            self.mongodb_collection = db['trading_signals']
+
+            print("✅ Connected to MongoDB Atlas")
+            return True
+        except PyMongoError as e:
+            print(f"⚠️ MongoDB connection failed: {e}")
+            print("📄 Will fall back to JSON file storage")
+            return False
+
+    def fetch_missed_signals_from_mongodb(self):
+        """Fetch missed signals directly from MongoDB"""
+        if not self.mongodb_collection:
+            print("🔄 MongoDB not available, checking via API...")
+            return self.fetch_missed_signals()
+
+        try:
+            print("🔄 Checking for missed signals from MongoDB...")
+
+            # Build query filter
+            query_filter = {}
+            if self.last_signal_timestamp:
+                try:
+                    since_dt = parser.parse(self.last_signal_timestamp)
+                    query_filter['received_at'] = {'$gt': since_dt}
+                except Exception as e:
+                    print(f"⚠️ Invalid timestamp format: {self.last_signal_timestamp}")
+
+            # Query MongoDB directly
+            missed_signals_cursor = self.mongodb_collection.find(query_filter).sort('received_at', 1)
+            missed_signals = list(missed_signals_cursor)
+
+            if missed_signals:
+                print(f"📥 Found {len(missed_signals)} missed signals in MongoDB")
+
+                for signal_doc in missed_signals:
+                    # Convert MongoDB document to our format
+                    received_time = signal_doc['received_at']
+                    if isinstance(received_time, str):
+                        received_time = parser.parse(received_time)
+
+                    # Reconstruct signal data from MongoDB format
+                    signal_data = {
+                        'timestamp': signal_doc.get('timestamp'),
+                        'signal_id': signal_doc.get('signal_id'),
+                        'epoch_time': signal_doc.get('epoch_time'),
+                        'signal': signal_doc.get('signal_data', {})
+                    }
+
+                    # Process as a caught-up signal
+                    self.process_signal(
+                        signal_data,
+                        received_time,
+                        is_catchup=True,
+                        original_id=signal_doc.get('signal_id')
+                    )
+
+                print(f"✅ Successfully caught up with {len(missed_signals)} signals from MongoDB")
+            else:
+                print("✅ No missed signals found in MongoDB")
+
+        except PyMongoError as e:
+            print(f"❌ Error fetching from MongoDB: {e}")
+            print("🔄 Falling back to API method...")
+            return self.fetch_missed_signals()
 
     def load_signals(self):
         """Load previously collected signals from JSON file"""
@@ -74,7 +156,7 @@ class WebhookSignalCollector:
             print("🔄 Checking for missed signals from Vercel...")
 
             # Build URL with timestamp filter if we have a last signal
-            fetch_url = f"{self.webhook_url}/api/webhook/api/signals"
+            fetch_url = f"{self.webhook_url}/api/signals"
             if self.last_signal_timestamp:
                 fetch_url += f"?since={self.last_signal_timestamp}"
 
@@ -253,9 +335,14 @@ class WebhookSignalCollector:
         print("🔥 Press Ctrl+C to stop monitoring")
         print("=" * 80)
 
-        # PHASE 1: Catch-up mode - fetch any missed signals from Vercel
+        # PHASE 1: Catch-up mode - fetch any missed signals
         print("\n🔄 PHASE 1: Catch-up Mode")
-        self.fetch_missed_signals()
+        if self.mongodb_collection:
+            print("📊 Using direct MongoDB connection for faster catch-up")
+            self.fetch_missed_signals_from_mongodb()
+        else:
+            print("🌐 Using API endpoint for catch-up")
+            self.fetch_missed_signals()
 
         # PHASE 2: Live mode - start local server for forwarded signals
         print("\n📡 PHASE 2: Live Mode - Starting tunnel listener")
