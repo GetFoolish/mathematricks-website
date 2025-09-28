@@ -74,7 +74,7 @@ class WebhookSignalCollector:
             print("🔄 Checking for missed signals from Vercel...")
 
             # Build URL with timestamp filter if we have a last signal
-            fetch_url = f"{self.webhook_url}/api/signals"
+            fetch_url = f"{self.webhook_url}/api/webhook/api/signals"
             if self.last_signal_timestamp:
                 fetch_url += f"?since={self.last_signal_timestamp}"
 
@@ -318,27 +318,31 @@ class WebhookSignalCollector:
         print("⚡ Live: Receive real-time signals via Cloudflare forwarding")
 
         print("\n🧪 Test Commands:")
+        print("\n# Send signal using Python sender:")
+        print('python3 signal_sender.py --ticker AAPL --action BUY --price 150.25')
+        print('python3 signal_sender.py --test-suite')
+
         print("\n# Test Production Webhook (will be stored and forwarded):")
         print(f'curl -X POST {self.webhook_url}/api/webhook \\')
         print('  -H "Content-Type: application/json" \\')
         print('  -d \'{"passphrase": "yahoo123", "timestamp": "'+ datetime.datetime.now().isoformat() +'", "signal": {"ticker": "AAPL", "price": 150.25, "action": "BUY"}}\'')
+
+        print(f"\n# Get stored signals from Vercel:")
+        print(f'curl -X GET {self.webhook_url}/api/signals')
 
         print(f"\n# Test Local Collector Direct (bypass webhook):")
         print(f'curl -X POST http://localhost:{self.local_port} \\')
         print('  -H "Content-Type: application/json" \\')
         print('  -d \'{"passphrase": "yahoo123", "timestamp": "'+ datetime.datetime.now().isoformat() +'", "signal": {"ticker": "TSLA", "price": 245.75, "action": "SELL"}}\'')
 
-        print(f"\n# Get stored signals from Vercel:")
-        print(f'curl -X GET {self.webhook_url}/api/signals')
-
-        print(f"\n# Simulate forwarded signal (as Cloudflare would send):")
-        print(f'curl -X POST http://localhost:{self.local_port} \\')
+        print(f"\n# Test via Cloudflare Tunnel (signals.mathematricks.fund):")
+        print(f'curl -X POST https://signals.mathematricks.fund \\')
         print('  -H "Content-Type: application/json" \\')
-        print('  -d \'{"source": "vercel_forwarded", "forwarded_at": "'+ datetime.datetime.now().isoformat() +'", "original_signal": {"passphrase": "yahoo123", "timestamp": "'+ datetime.datetime.now().isoformat() +'", "signal": {"ticker": "ETH", "price": 2500.50, "action": "BUY"}}}\'')
+        print('  -d \'{"passphrase": "test123", "timestamp": "'+ datetime.datetime.now().isoformat() +'", "signal": {"ticker": "BTC", "price": 42000, "action": "BUY"}}\'')
         print("=" * 80)
 
 if __name__ == "__main__":
-    webhook_url = "https://mathematricks-website.vercel.app"
+    webhook_url = "https://api.mathematricks.fund"
     collector = WebhookSignalCollector(webhook_url)
 
     print("🚀 Starting Mathematricks Capital Webhook Signal Collector")
