@@ -47,7 +47,7 @@ def get_signals_collection():
 def store_signal(signal_data):
     """Store signal in MongoDB"""
     collection = get_signals_collection()
-    if not collection:
+    if collection is None:
         logger.error("Cannot store signal - MongoDB connection failed")
         return None
 
@@ -248,7 +248,7 @@ class handler(BaseHTTPRequestHandler):
                 # Get signal count from MongoDB
                 collection = get_signals_collection()
                 signal_count = 0
-                if collection:
+                if collection is not None:
                     try:
                         signal_count = collection.count_documents({})
                     except PyMongoError:
@@ -275,7 +275,7 @@ class handler(BaseHTTPRequestHandler):
         """Handle GET /api/signals - return stored signals from MongoDB"""
         try:
             collection = get_signals_collection()
-            if not collection:
+            if collection is None:
                 self.send_error_response(500, "Database connection failed")
                 return
 
@@ -330,7 +330,7 @@ class handler(BaseHTTPRequestHandler):
         """Handle GET /api/signals/cleanup - remove old signals from MongoDB"""
         try:
             collection = get_signals_collection()
-            if not collection:
+            if collection is None:
                 self.send_error_response(500, "Database connection failed")
                 return
 

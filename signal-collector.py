@@ -62,7 +62,7 @@ class WebhookSignalCollector:
 
     def fetch_missed_signals_from_mongodb(self):
         """Fetch missed signals directly from MongoDB"""
-        if not self.mongodb_collection:
+        if self.mongodb_collection is None:
             print("🔄 MongoDB not available, checking via API...")
             return self.fetch_missed_signals()
 
@@ -342,7 +342,7 @@ class WebhookSignalCollector:
 
         # PHASE 1: Catch-up mode - fetch any missed signals
         print("\n🔄 PHASE 1: Catch-up Mode")
-        if self.mongodb_collection:
+        if self.mongodb_collection is not None:
             print("📊 Using direct MongoDB connection for faster catch-up")
             self.fetch_missed_signals_from_mongodb()
         else:
@@ -365,7 +365,7 @@ class WebhookSignalCollector:
                     webhook_status = "🔴 OFFLINE"
 
                 # Test MongoDB connectivity
-                mongodb_status = "🟢 CONNECTED" if self.mongodb_collection else "🔴 DISCONNECTED"
+                mongodb_status = "🟢 CONNECTED" if self.mongodb_collection is not None else "🔴 DISCONNECTED"
 
                 print(f"[{current_time}] 🌐 Webhook: {webhook_status} | 📊 MongoDB: {mongodb_status} | 📋 Local Signals: {len(self.collected_signals)}")
                 time.sleep(10)  # Check every 10 seconds
