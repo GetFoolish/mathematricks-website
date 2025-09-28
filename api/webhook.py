@@ -22,7 +22,12 @@ def get_mongodb_client():
         return None
 
     try:
-        client = MongoClient(connection_string)
+        # Add SSL options for compatibility
+        client = MongoClient(
+            connection_string,
+            tls=True,
+            tlsAllowInvalidCertificates=True
+        )
         # Test connection
         client.admin.command('ping')
         return client

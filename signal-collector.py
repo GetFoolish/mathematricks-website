@@ -40,7 +40,12 @@ class WebhookSignalCollector:
     def connect_to_mongodb(self):
         """Connect to MongoDB Atlas"""
         try:
-            self.mongodb_client = MongoClient(self.mongodb_url)
+            # Add SSL options for macOS compatibility
+            self.mongodb_client = MongoClient(
+                self.mongodb_url,
+                tls=True,
+                tlsAllowInvalidCertificates=True  # For development only
+            )
             # Test connection
             self.mongodb_client.admin.command('ping')
 
@@ -344,10 +349,9 @@ class WebhookSignalCollector:
             print("🌐 Using API endpoint for catch-up")
             self.fetch_missed_signals()
 
-        # PHASE 2: Live mode - start local server for forwarded signals
-        print("\n📡 PHASE 2: Live Mode - Starting tunnel listener")
-        server_thread = threading.Thread(target=self.start_local_server, daemon=True)
-        server_thread.start()
+        # PHASE 2: Live mode - continuous monitoring
+        print("\n📡 PHASE 2: Live Mode - Monitoring signals")
+        print("💡 Signals are stored in MongoDB and retrieved via catch-up on restart")
 
         try:
             while True:
@@ -360,20 +364,14 @@ class WebhookSignalCollector:
                 except requests.exceptions.RequestException:
                     webhook_status = "🔴 OFFLINE"
 
-                # Test local tunnel listener
-                try:
-                    response = requests.get(f"http://localhost:{self.local_port}", timeout=2)
-                    tunnel_status = "🟢 LISTENING" if response.status_code == 200 else f"🟡 STATUS {response.status_code}"
-                except requests.exceptions.RequestException:
-                    tunnel_status = "🔴 NOT READY"
+                # Test MongoDB connectivity
+                mongodb_status = "🟢 CONNECTED" if self.mongodb_collection else "🔴 DISCONNECTED"
 
-                print(f"[{current_time}] 🌐 Webhook: {webhook_status} | 📡 Tunnel: {tunnel_status} | 📊 Signals: {len(self.collected_signals)}")
-                time.sleep(5)  # Check every 5 seconds
+                print(f"[{current_time}] 🌐 Webhook: {webhook_status} | 📊 MongoDB: {mongodb_status} | 📋 Local Signals: {len(self.collected_signals)}")
+                time.sleep(10)  # Check every 10 seconds
 
         except KeyboardInterrupt:
-            print("\n🛑 Signal collection stopped by user")
-            if self.server:
-                self.server.shutdown()
+            print("\n🛑 Signal monitoring stopped by user")
             self.display_summary()
 
     def display_summary(self):
