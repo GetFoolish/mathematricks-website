@@ -63,8 +63,8 @@ class WebhookSignalCollector:
     def fetch_missed_signals_from_mongodb(self):
         """Fetch missed signals directly from MongoDB"""
         if self.mongodb_collection is None:
-            print("🔄 MongoDB not available, checking via API...")
-            return self.fetch_missed_signals()
+            print("❌ MongoDB not available - cannot fetch missed signals")
+            return
 
         try:
             print("🔄 Checking for missed signals from MongoDB...")
@@ -113,8 +113,7 @@ class WebhookSignalCollector:
 
         except PyMongoError as e:
             print(f"❌ Error fetching from MongoDB: {e}")
-            print("🔄 Falling back to API method...")
-            return self.fetch_missed_signals()
+            print("💡 Check MongoDB connection or restart collector")
 
     def load_signals(self):
         """Load previously collected signals from JSON file"""
@@ -155,47 +154,6 @@ class WebhookSignalCollector:
         except Exception as e:
             print(f"❌ Error saving signals: {e}")
 
-    def fetch_missed_signals(self):
-        """Fetch signals from Vercel that were missed while offline"""
-        try:
-            print("🔄 Checking for missed signals from Vercel...")
-
-            # Build URL with timestamp filter if we have a last signal
-            fetch_url = f"{self.webhook_url}/api/signals"
-            if self.last_signal_timestamp:
-                fetch_url += f"?since={self.last_signal_timestamp}"
-
-            response = requests.get(fetch_url, timeout=10)
-
-            if response.status_code == 200:
-                data = response.json()
-                missed_signals = data.get('signals', [])
-
-                if missed_signals:
-                    print(f"📥 Found {len(missed_signals)} missed signals, downloading...")
-
-                    for stored_signal in missed_signals:
-                        # Convert stored signal back to our format
-                        received_time = parser.parse(stored_signal['received_at'])
-                        signal_data = stored_signal['signal_data']
-
-                        # Process as a caught-up signal
-                        self.process_signal(
-                            signal_data,
-                            received_time,
-                            is_catchup=True,
-                            original_id=stored_signal['id']
-                        )
-
-                    print(f"✅ Successfully caught up with {len(missed_signals)} signals")
-                else:
-                    print("✅ No missed signals found")
-
-            else:
-                print(f"⚠️ Failed to fetch signals from Vercel: {response.status_code}")
-
-        except Exception as e:
-            print(f"❌ Error fetching missed signals: {e}")
 
     def calculate_delay(self, sent_timestamp: str, received_timestamp: datetime.datetime) -> float:
         """Calculate delay between sent and received timestamps"""
@@ -343,11 +301,11 @@ class WebhookSignalCollector:
         # PHASE 1: Catch-up mode - fetch any missed signals
         print("\n🔄 PHASE 1: Catch-up Mode")
         if self.mongodb_collection is not None:
-            print("📊 Using direct MongoDB connection for faster catch-up")
+            print("📊 Using direct MongoDB connection for catch-up")
             self.fetch_missed_signals_from_mongodb()
         else:
-            print("🌐 Using API endpoint for catch-up")
-            self.fetch_missed_signals()
+            print("❌ MongoDB connection failed - cannot fetch missed signals")
+            print("💡 Restart the collector to retry MongoDB connection")
 
         # PHASE 2: Live mode - continuous monitoring
         print("\n📡 PHASE 2: Live Mode - Monitoring signals")

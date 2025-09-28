@@ -231,150 +231,31 @@ class handler(BaseHTTPRequestHandler):
             self.send_error_response(500, 'Internal server error')
 
     def do_GET(self):
-        """Handle GET requests for signal management"""
+        """Handle GET requests - return basic service info"""
         try:
-            # Parse URL path and query parameters
-            parsed_url = urllib.parse.urlparse(self.path)
-            path = parsed_url.path
-            query_params = urllib.parse.parse_qs(parsed_url.query)
+            # Get signal count from MongoDB for status
+            collection = get_signals_collection()
+            signal_count = 0
+            if collection is not None:
+                try:
+                    signal_count = collection.count_documents({})
+                except PyMongoError:
+                    signal_count = "unavailable"
 
-            # Route different GET endpoints
-            if path == '/api/signals':
-                self.handle_get_signals(query_params)
-            elif path == '/api/signals/cleanup':
-                self.handle_cleanup_signals(query_params)
-            else:
-                # Default webhook info
-                # Get signal count from MongoDB
-                collection = get_signals_collection()
-                signal_count = 0
-                if collection is not None:
-                    try:
-                        signal_count = collection.count_documents({})
-                    except PyMongoError:
-                        signal_count = "unavailable"
-
-                response_data = {
-                    'service': 'Mathematricks Capital TradingView Webhook',
-                    'status': 'active',
-                    'timestamp': datetime.now(timezone.utc).isoformat(),
-                    'stored_signals': signal_count,
-                    'database': 'MongoDB Atlas',
-                    'endpoints': {
-                        'webhook': 'POST /',
-                        'get_signals': 'GET /api/signals',
-                        'cleanup': 'GET /api/signals/cleanup?before=timestamp'
-                    }
-                }
-                self.send_json_response(200, response_data)
+            response_data = {
+                'service': 'Mathematricks Capital Signal Receiver',
+                'status': 'active',
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'stored_signals': signal_count,
+                'database': 'MongoDB Atlas',
+                'endpoint': 'POST /api/signals - Send trading signals here',
+                'note': 'For signal retrieval, connect directly to MongoDB from your application'
+            }
+            self.send_json_response(200, response_data)
         except Exception as e:
             logger.error(f"Error in GET handler: {str(e)}")
             self.send_error_response(500, f"Internal server error: {str(e)}")
 
-    def handle_get_signals(self, query_params):
-        """Handle GET /api/signals - return stored signals from MongoDB"""
-        try:
-            collection = get_signals_collection()
-            if collection is None:
-                self.send_error_response(500, "Database connection failed")
-                return
-
-            # Build query filter
-            query_filter = {}
-            since_timestamp = query_params.get('since', [None])[0]
-
-            if since_timestamp:
-                try:
-                    # Parse timestamp and filter
-                    from dateutil import parser
-                    since_dt = parser.parse(since_timestamp)
-                    query_filter['received_at'] = {'$gt': since_dt}
-                except Exception as e:
-                    logger.warning(f"Invalid timestamp format: {since_timestamp}")
-
-            # Query MongoDB with sorting (newest first)
-            signals_cursor = collection.find(query_filter).sort('received_at', -1).limit(100)
-            signals_list = []
-
-            for signal in signals_cursor:
-                # Convert ObjectId to string and format for API response
-                signal_formatted = {
-                    'id': str(signal['_id']),
-                    'signal_id': signal.get('signal_id'),
-                    'received_at': signal['received_at'].isoformat(),
-                    'epoch_time': signal.get('epoch_time'),
-                    'signal_data': signal.get('signal_data', {}),
-                    'source': signal.get('source', 'unknown')
-                }
-                signals_list.append(signal_formatted)
-
-            response_data = {
-                'status': 'success',
-                'total_signals': len(signals_list),
-                'signals': signals_list,
-                'retrieved_at': datetime.now(timezone.utc).isoformat(),
-                'database': 'MongoDB Atlas'
-            }
-
-            logger.info(f"Returned {len(signals_list)} signals from MongoDB")
-            self.send_json_response(200, response_data)
-
-        except PyMongoError as e:
-            logger.error(f"MongoDB error getting signals: {str(e)}")
-            self.send_error_response(500, f"Database error: {str(e)}")
-        except Exception as e:
-            logger.error(f"Error getting signals: {str(e)}")
-            self.send_error_response(500, f"Error retrieving signals: {str(e)}")
-
-    def handle_cleanup_signals(self, query_params):
-        """Handle GET /api/signals/cleanup - remove old signals from MongoDB"""
-        try:
-            collection = get_signals_collection()
-            if collection is None:
-                self.send_error_response(500, "Database connection failed")
-                return
-
-            before_timestamp = query_params.get('before', [None])[0]
-
-            if not before_timestamp:
-                self.send_error_response(400, "Missing 'before' timestamp parameter")
-                return
-
-            # Parse timestamp
-            try:
-                from dateutil import parser
-                before_dt = parser.parse(before_timestamp)
-            except Exception as e:
-                self.send_error_response(400, f"Invalid timestamp format: {before_timestamp}")
-                return
-
-            # Get count before deletion
-            original_count = collection.count_documents({})
-
-            # Remove signals before the given timestamp
-            delete_result = collection.delete_many({'received_at': {'$lt': before_dt}})
-            removed_count = delete_result.deleted_count
-
-            # Get count after deletion
-            remaining_count = collection.count_documents({})
-
-            response_data = {
-                'status': 'success',
-                'removed_signals': removed_count,
-                'remaining_signals': remaining_count,
-                'cleaned_at': datetime.now(timezone.utc).isoformat(),
-                'database': 'MongoDB Atlas'
-            }
-
-            logger.info(f"Cleaned up {removed_count} signals from MongoDB")
-            self.send_json_response(200, response_data)
-
-        except PyMongoError as e:
-            logger.error(f"MongoDB error cleaning signals: {str(e)}")
-            self.send_error_response(500, f"Database error: {str(e)}")
-        except Exception as e:
-            logger.error(f"Error cleaning signals: {str(e)}")
-            self.send_error_response(500, f"Error cleaning signals: {str(e)}")
 
     def send_json_response(self, status_code, data):
         """Send JSON response with proper headers"""

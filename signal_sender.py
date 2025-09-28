@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import argparse
 
 class SignalSender:
-    def __init__(self, api_url="https://api.mathematricks.fund/api/webhook", passphrase="yahoo123"):
+    def __init__(self, api_url="https://api.mathematricks.fund/api/signals", passphrase="yahoo123"):
         self.api_url = api_url
         self.passphrase = passphrase
         self.session = requests.Session()
@@ -115,8 +115,8 @@ class SignalSender:
 
 def main():
     parser = argparse.ArgumentParser(description='Send trading signals to Mathematricks webhook')
-    parser.add_argument('--url', default='https://api.mathematricks.fund/api/webhook',
-                       help='Webhook URL')
+    parser.add_argument('--url', default='https://api.mathematricks.fund/api/signals',
+                       help='Signals endpoint URL')
     parser.add_argument('--passphrase', default='yahoo123',
                        help='Webhook passphrase')
     parser.add_argument('--ticker', help='Stock ticker (for single signal)')
