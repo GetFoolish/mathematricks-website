@@ -181,7 +181,7 @@ exports.handler = async (event, context) => {
     </head>
     <body>
         <div class="container">
-            <h1>Mathematricks Signal API</h1>
+            <h1>Mathematricks Fun(d) Signal API</h1>
             <p class="subtitle">Send trading signals with just a few lines of code</p>
 
             <div class="section">
@@ -196,9 +196,8 @@ exports.handler = async (event, context) => {
                 </div>
 
                 <div class="url-section">
-                    <h3>📍 API Endpoints</h3>
-                    <p><strong>Staging:</strong> https://staging.mathematricks.fund/api/signals</p>
-                    <p><strong>Production:</strong> https://mathematricks.fund/api/signals</p>
+                    <h3>📍 API Endpoint</h3>
+                    <p>https://mathematricks.fund/api/signals</p>
                 </div>
 
                 <div id="code-examples">
@@ -256,7 +255,7 @@ exports.handler = async (event, context) => {
 
         <script>
             const codeExamples = {
-                curl: \`curl -X POST https://staging.mathematricks.fund/api/signals \\\\
+                curl: \`curl -X POST https://mathematricks.fund/api/signals \\\\
   -H "Content-Type: application/json" \\\\
   -d '{
     "strategy_name": "My Strategy",
@@ -270,7 +269,7 @@ exports.handler = async (event, context) => {
 import time
 
 response = requests.post(
-    "https://staging.mathematricks.fund/api/signals",
+    "https://mathematricks.fund/api/signals",
     json={
         "strategy_name": "My Strategy",
         "signal_sent_EPOCH": int(time.time()),
@@ -285,7 +284,7 @@ if response.status_code == 200:
 else:
     print(f"❌ Error: {response.text}")\`,
 
-                javascript: \`const response = await fetch("https://staging.mathematricks.fund/api/signals", {
+                javascript: \`const response = await fetch("https://mathematricks.fund/api/signals", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
@@ -317,7 +316,7 @@ std::string json = R"({
 
 CURL *curl = curl_easy_init();
 if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "https://staging.mathematricks.fund/api/signals");
+    curl_easy_setopt(curl, CURLOPT_URL, "https://mathematricks.fund/api/signals");
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
 
     struct curl_slist *headers = NULL;
