@@ -120,12 +120,19 @@ async function handlePost(event) {
             return createResponse(401, { error: 'Unauthorized: Invalid passphrase' });
         }
 
+        // Determine which endpoint was used
+        const host = event.headers?.host || event.headers?.Host || 'unknown';
+        const isStaging = host.includes('staging');
+        const environment = isStaging ? 'staging' : 'production';
+
         // Prepare signal document for MongoDB
         const now = new Date();
         const signalDocument = {
             ...requestData,
             received_at: now,
-            signal_processed: false
+            signal_processed: false,
+            api_endpoint: host,
+            environment: environment
         };
 
         // Store in MongoDB
