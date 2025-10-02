@@ -74,3 +74,11 @@
 
 [context.branch-deploy]
   command = "echo 'Branch deploy'"
+
+# Enable staging branch deploys
+[context.staging]
+  command = "echo 'Staging build'"
+
+# Configure branch deploys
+[build.processing]
+  skip_processing = false
