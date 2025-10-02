@@ -1,10 +1,8 @@
 [build]
   # No build command needed for static HTML
+  command = "echo 'No build needed for static site'"
   publish = "."
   functions = "netlify/functions"
-
-[build.environment]
-  NODE_VERSION = "18"
 
 # API Function routes (must come BEFORE catch-all)
 [[redirects]]
