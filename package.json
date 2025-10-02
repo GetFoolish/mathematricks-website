@@ -1,0 +1,8 @@
+{
+  "name": "mathematricks-netlify-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions for Mathematricks Fund API",
+  "dependencies": {
+    "mongodb": "^6.0.0"
+  }
+}

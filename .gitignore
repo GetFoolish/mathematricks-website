@@ -40,6 +40,7 @@ venv.bak/
 gcp-key.json
 service-account.json
 *.json
+!package.json
 
 # IDE
 .vscode/
