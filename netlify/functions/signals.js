@@ -107,11 +107,15 @@ async function handlePost(event) {
             return createResponse(400, { error: validation.error });
         }
 
-        // Check passphrase
+        // Check passphrase - support multiple valid passphrases
         const passphrase = requestData.passphrase;
-        const expectedPassphrase = process.env.WEBHOOK_PASSPHRASE || 'yahoo123';
 
-        if (passphrase !== expectedPassphrase) {
+        // Get valid passphrases from environment (comma-separated)
+        const validPassphrases = (process.env.WEBHOOK_PASSPHRASES || process.env.WEBHOOK_PASSPHRASE || 'yahoo123')
+            .split(',')
+            .map(p => p.trim());
+
+        if (!validPassphrases.includes(passphrase)) {
             console.error('Invalid passphrase provided');
             return createResponse(401, { error: 'Unauthorized: Invalid passphrase' });
         }
