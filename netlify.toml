@@ -12,8 +12,8 @@
   status = 200
 
 [[redirects]]
-  from = "/api/signals_docs"
-  to = "/.netlify/functions/signals_docs"
+  from = "/api/signals_documentation"
+  to = "/.netlify/functions/signals_documentation"
   status = 200
 
 # Website catch-all redirect (AFTER API routes)
