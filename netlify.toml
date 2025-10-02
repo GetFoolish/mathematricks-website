@@ -4,6 +4,7 @@
   publish = "."
   functions = "netlify/functions"
 
+
 # API Function routes (must come BEFORE catch-all)
 [[redirects]]
   from = "/api/signals"
