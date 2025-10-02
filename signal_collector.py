@@ -421,7 +421,7 @@ class WebhookSignalCollector:
         print("=" * 80)
 
 if __name__ == "__main__":
-    webhook_url = "https://api.mathematricks.fund"
+    webhook_url = "https://mathematricks.fund"
     collector = WebhookSignalCollector(webhook_url)
 
     print("🚀 Starting Mathematricks Fund Webhook Signal Collector")

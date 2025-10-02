@@ -1,11 +1,23 @@
 [build]
   # No build command needed for static HTML
   publish = "."
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
 
-# Redirect rules for SPA-like behavior
+# API Function routes (must come BEFORE catch-all)
+[[redirects]]
+  from = "/api/signals"
+  to = "/.netlify/functions/signals"
+  status = 200
+
+[[redirects]]
+  from = "/api/signals_docs"
+  to = "/.netlify/functions/signals_docs"
+  status = 200
+
+# Website catch-all redirect (AFTER API routes)
 [[redirects]]
   from = "/*"
   to = "/index.html"
