@@ -261,7 +261,7 @@ exports.handler = async (event, context) => {
     "strategy_name": "My Strategy",
     "signal_sent_EPOCH": 1696270000,
     "signalID": "signal_001",
-    "passphrase": "your_passphrase_here",
+    "passphrase": "your_passphrase_here", // Ask your Mathematricks.fund representative for a passphrase or send an email to strategies@mathematricks.fund
     "signal": {"ticker": "AAPL", "action": "BUY", "price": 150.25}
   }'\`,
 
@@ -274,7 +274,7 @@ response = requests.post(
         "strategy_name": "My Strategy",
         "signal_sent_EPOCH": int(time.time()),
         "signalID": "signal_001",
-        "passphrase": "your_passphrase_here",
+        "passphrase": "your_passphrase_here",  # Ask your Mathematricks.fund representative for a passphrase or send an email to strategies@mathematricks.fund
         "signal": {"ticker": "AAPL", "action": "BUY", "price": 150.25}
     }
 )
@@ -291,7 +291,7 @@ else:
         strategy_name: "My Strategy",
         signal_sent_EPOCH: Math.floor(Date.now() / 1000),
         signalID: "signal_001",
-        passphrase: "your_passphrase_here",
+        passphrase: "your_passphrase_here", // Ask your Mathematricks.fund representative for a passphrase or send an email to strategies@mathematricks.fund
         signal: {ticker: "AAPL", action: "BUY", price: 150.25}
     })
 });
@@ -310,7 +310,7 @@ std::string json = R"({
     "strategy_name": "My Strategy",
     "signal_sent_EPOCH": )" + std::to_string(std::time(nullptr)) + R"(,
     "signalID": "signal_001",
-    "passphrase": "your_passphrase_here",
+    "passphrase": "your_passphrase_here", // Ask your Mathematricks.fund representative for a passphrase or send an email to strategies@mathematricks.fund
     "signal": {"ticker": "AAPL", "action": "BUY", "price": 150.25}
 })";
 
