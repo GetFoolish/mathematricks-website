@@ -36,12 +36,13 @@
             background: var(--brand-bg);
             color: var(--brand-text);
             line-height: 1.6;
+            font-size: 14px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 0 1.5rem;
+            padding: 0 2rem;
         }
 
         /* Header */
@@ -66,9 +67,9 @@
         .brand-logo {
             font-family: 'Inter', sans-serif;
             font-weight: 300;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
         }
 
         .brand-logo .accent-m {
@@ -81,15 +82,15 @@
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             list-style: none;
         }
 
         .nav-links a {
             color: var(--brand-text);
             text-decoration: none;
-            font-size: 0.875rem;
-            opacity: 0.8;
+            font-size: 0.8rem;
+            opacity: 0.7;
             transition: opacity 0.2s;
         }
 
@@ -103,7 +104,7 @@
             background: none;
             border: none;
             color: var(--brand-text);
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             cursor: pointer;
         }
 
@@ -118,6 +119,7 @@
                 flex-direction: column;
                 padding: 1rem;
                 border-bottom: 1px solid var(--brand-border);
+                gap: 0.5rem;
             }
 
             .nav-links.active {
@@ -133,8 +135,8 @@
         .binary-pattern {
             position: relative;
             background-image:
-                radial-gradient(circle at 25% 25%, hsla(332, 73%, 60%, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, hsla(332, 73%, 60%, 0.03) 0%, transparent 50%);
+                radial-gradient(circle at 25% 25%, hsla(332, 73%, 60%, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, hsla(332, 73%, 60%, 0.02) 0%, transparent 50%);
         }
 
         .binary-pattern::before {
@@ -145,8 +147,8 @@
             right: 0;
             bottom: 0;
             font-family: 'Courier New', monospace;
-            font-size: 0.7rem;
-            color: hsla(332, 73%, 60%, 0.08);
+            font-size: 0.6rem;
+            color: hsla(332, 73%, 60%, 0.05);
             line-height: 1.8;
             overflow: hidden;
             pointer-events: none;
@@ -157,59 +159,61 @@
 
         /* Sections */
         section {
-            padding: 5rem 0;
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--brand-border);
+        }
+
+        section:last-of-type {
+            border-bottom: none;
         }
 
         .hero {
-            min-height: 100vh;
+            min-height: 70vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-        }
-
-        .hero .brand-logo {
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--brand-border);
         }
 
         .hero .subtitle {
-            font-size: 1.25rem;
+            font-size: 1rem;
             opacity: 0.6;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             letter-spacing: 0.1em;
         }
 
         .hero h1 {
-            font-size: clamp(1.5rem, 5vw, 3rem);
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
             font-weight: 300;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            line-height: 1.2;
         }
 
         .hero .description {
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto 3rem;
-            font-size: 1.125rem;
+            font-size: 0.95rem;
             opacity: 0.8;
-            line-height: 1.8;
+            line-height: 1.7;
         }
 
         .hero .description p {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
         }
 
         .inspired-by {
-            font-size: 0.875rem;
-            opacity: 0.5;
+            font-size: 0.75rem;
+            opacity: 0.4;
             letter-spacing: 0.2em;
             text-transform: uppercase;
         }
 
         /* Content sections */
         .section-title {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: 300;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             text-align: center;
         }
 
@@ -223,34 +227,45 @@
         @media (max-width: 768px) {
             .section-grid {
                 grid-template-columns: 1fr;
-                gap: 2rem;
+                gap: 1.5rem;
+            }
+
+            .section-title {
+                text-align: left;
+                margin-bottom: 1.5rem;
             }
         }
 
+        .section-content {
+            font-size: 0.9rem;
+        }
+
         .section-content p {
-            margin-bottom: 1.5rem;
-            line-height: 1.8;
+            margin-bottom: 1.2rem;
+            line-height: 1.7;
         }
 
         .edge-cards {
             display: grid;
-            gap: 2rem;
+            gap: 2.5rem;
             margin-top: 2rem;
         }
 
         .edge-card h3 {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
             color: var(--brand-magenta);
+            font-weight: 600;
         }
 
         .edge-card p {
-            line-height: 1.8;
+            line-height: 1.7;
+            font-size: 0.9rem;
         }
 
         /* Contact Form */
         .contact-form {
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
         }
 
@@ -260,26 +275,34 @@
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            opacity: 0.8;
+            margin-bottom: 0.4rem;
+            font-size: 0.8rem;
+            opacity: 0.7;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 0.75rem;
+            padding: 0.7rem;
             border: 1px solid var(--brand-border);
             background: var(--brand-bg);
             color: var(--brand-text);
             font-family: inherit;
-            font-size: 0.875rem;
-            border-radius: 4px;
+            font-size: 0.8rem;
+            border-radius: 3px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--brand-magenta);
         }
 
         .form-group textarea {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
 
@@ -287,11 +310,11 @@
             background: var(--brand-magenta);
             color: white;
             border: none;
-            padding: 1rem 2rem;
+            padding: 0.8rem 1.5rem;
             font-family: inherit;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 3px;
             transition: opacity 0.2s;
         }
 
@@ -304,8 +327,8 @@
             text-align: center;
             padding: 2rem 0;
             border-top: 1px solid var(--brand-border);
-            font-size: 0.875rem;
-            opacity: 0.6;
+            font-size: 0.75rem;
+            opacity: 0.5;
         }
 
         /* Utilities */
@@ -318,6 +341,21 @@
             color: white;
             padding: 0.2em 0.4em;
             border-radius: 2px;
+        }
+
+        /* Refined spacing */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+
+            section {
+                padding: 3rem 0;
+            }
+
+            .hero {
+                padding: 2rem 0;
+            }
         }
     </style>
 </head>
@@ -343,11 +381,8 @@
     <!-- Hero Section -->
     <section id="home" class="hero binary-pattern">
         <div class="container">
-            <div class="brand-logo">
-                <span>MATHE</span><span class="accent-m">M</span><span>ATRICS</span>
-            </div>
-            <p class="subtitle">Fun(D)</p>
-            <h1>Making Money Should Be This Fun.</h1>
+            <p class="subtitle">MatheMatricks Fun(D)</p>
+            <h1>Making Money Shouldn’t Be This Fun.</h1>
             <div class="description">
                 <p>Let's drop the pretense. You're not here for a mission statement about "changing the world." You're here to turn a large pile of money into a larger pile of money.</p>
                 <p>So here we are. Cold, hard, beautiful math—deployed across a multi-strategy quantitative fund that's built to perform. We're not selling a fairy-tale. We're selling a result.</p>
@@ -363,7 +398,7 @@
             <div class="edge-cards">
                 <div class="edge-card">
                     <h3>Talent Acquisition</h3>
-                    <p>We attract brilliant quants by replacing soul-crushing bureaucracy with a simple formula: intellectual freedom, a mandate to think differently. Sure, enormous piles of capital, helps.</p>
+                    <p>We attract brilliant quants by replacing soul-crushing bureaucracy with a simple formula: intellectual freedom, a mandate to think differently. Sure, enormous piles of capital helps.</p>
                 </div>
                 <div class="edge-card">
                     <h3>Strategy Diversity</h3>
@@ -374,7 +409,7 @@
                     <p>Our allocation algorithm is the sociopathic CEO of the strategy team. It has no ego. It feels no loyalty. If a strategy underperforms, it doesn't get a warning or a bad performance review. It gets its capital cut. Immediately. This brutal, unemotional discipline keeps the whole machine ruthlessly efficient.</p>
                 </div>
             </div>
-            <p style="margin-top: 3rem; text-align: center; font-style: italic;">Result: An equity curve that looks like a piece of art. It should be on a wall in MoMA*</p>
+            <p style="margin-top: 2.5rem; text-align: center; font-style: italic; opacity: 0.8; font-size: 0.9rem;">Result: An equity curve that looks like a piece of art. It should be on a wall in MoMA*</p>
         </div>
     </section>
 
@@ -438,7 +473,7 @@
     <section id="risk">
         <div class="container">
             <h2 class="section-title">Risk Management</h2>
-            <p class="text-center" style="margin-bottom: 3rem; font-size: 1.125rem; opacity: 0.8;">We love country music, but we're not cowboys. We handle volatile assets with extreme precision, respect, and a healthy dose of paranoia.</p>
+            <p class="text-center" style="margin-bottom: 2.5rem; font-size: 0.95rem; opacity: 0.7;">We love country music, but we're not cowboys. We handle volatile assets with extreme precision, respect, and a healthy dose of paranoia.</p>
             <div class="edge-cards">
                 <div class="edge-card">
                     <h3>The Kill Switches</h3>
@@ -460,8 +495,8 @@
     <section id="contact">
         <div class="container">
             <h2 class="section-title">Get In Touch</h2>
-            <p class="text-center" style="margin-bottom: 3rem; font-size: 1.125rem; opacity: 0.8;">What's on your mind?</p>
-            <form class="contact-form">
+            <p class="text-center" style="margin-bottom: 2.5rem; font-size: 0.95rem; opacity: 0.7;">What's on your mind?</p>
+            <form class="contact-form" action="mailto:vandan@getfoolish.com" method="post" enctype="text/plain">
                 <div class="form-group">
                     <label for="name">Name *</label>
                     <input type="text" id="name" name="name" required>
@@ -521,7 +556,6 @@
                         behavior: 'smooth',
                         block: 'start'
                     });
-                    // Close mobile menu after clicking
                     navLinks.classList.remove('active');
                 }
             });
@@ -531,9 +565,29 @@
         document.querySelector('.contact-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const queryType = document.getElementById('query-type').value;
-            let autoReply = '';
+            const formData = new FormData(this);
+            const queryType = formData.get('query-type');
 
+            // Create email body
+            const emailBody = `
+Name: ${formData.get('name')}
+Email: ${formData.get('email')}
+Company: ${formData.get('company') || 'Not provided'}
+Query Type: ${queryType}
+
+Message:
+${formData.get('message')}
+            `.trim();
+
+            // Create mailto link
+            const subject = `Mathematrics Contact Form - ${queryType}`;
+            const mailtoLink = `mailto:vandan@getfoolish.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+
+            // Open email client
+            window.location.href = mailtoLink;
+
+            // Show auto-reply message
+            let autoReply = '';
             switch(queryType) {
                 case 'investment':
                     autoReply = "Fund is currently closed to new capital. You're on our shortlist for when slots open.";
@@ -551,8 +605,10 @@
                     autoReply = "Thank you for your message. We'll be in touch soon.";
             }
 
-            alert(autoReply);
-            this.reset();
+            setTimeout(() => {
+                alert(autoReply);
+                this.reset();
+            }, 500);
         });
 
         // Add offset for fixed header when scrolling to sections
