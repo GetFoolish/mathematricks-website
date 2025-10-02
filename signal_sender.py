@@ -11,8 +11,8 @@ from datetime import datetime, timezone
 import argparse
 
 class SignalSender:
-    def __init__(self, api_url="https://mathematricks.fund/api/signals", passphrase="yahoo123"):
-        self.api_url = api_url
+    def __init__(self, passphrase="yahoo123", use_staging=False):
+        self.api_url = "https://staging.mathematricks.fund/api/signals" if use_staging else "https://mathematricks.fund/api/signals"
         self.passphrase = passphrase
         self.session = requests.Session()
         self.session.headers.update({
@@ -20,13 +20,17 @@ class SignalSender:
             'User-Agent': 'Mathematricks-SignalSender/1.0'
         })
 
-    def send_signal(self, ticker, action, price, volume_24h=0):
+    def send_signal(self, signal_id, signal_data, current_timestamp=None):
         """Send a trading signal to the webhook"""
-        now = datetime.now(timezone.utc)
-        signal_id = str(uuid.uuid4())[:8]  # Short unique ID
+        if current_timestamp is None:
+            now = datetime.now(timezone.utc)
+            current_timestamp = now.isoformat()
+        else:
+            now = datetime.fromisoformat(current_timestamp.replace('Z', '+00:00'))
+
         epoch_time = int(now.timestamp())
 
-        signal_data = {
+        payload = {
             # Required Pydantic fields
             "strategy_name": "Default Strategy",  # Required
             "signal_sent_EPOCH": epoch_time,      # Required
@@ -34,23 +38,19 @@ class SignalSender:
 
             # Optional fields
             "passphrase": self.passphrase,
-            "timestamp": now.isoformat(),
-            "signal": {
-                "ticker": ticker,
-                "price": price,
-                "action": action,
-                "volume_24h": volume_24h
-            }
+            "timestamp": current_timestamp,
+            "signal": signal_data  # Can be dict, list, or any structure
         }
 
         try:
-            print(f"📡 Sending {action} signal for {ticker} at ${price}")
-            print(f"   ID: {signal_id} | Epoch: {epoch_time}")
+            print(f"📡 Sending signal: {signal_id}")
+            print(f"   Epoch: {epoch_time}")
             print(f"   URL: {self.api_url}")
+            print(f"   Signal: {signal_data}")
 
             response = self.session.post(
                 self.api_url,
-                json=signal_data,
+                json=payload,
                 timeout=10
             )
 
@@ -80,7 +80,7 @@ class SignalSender:
         old_passphrase = self.passphrase
         self.passphrase = "wrong_password"
 
-        result = self.send_signal("TEST", "BUY", 100.0)
+        result = self.send_signal("test_001", {"ticker": "TEST", "action": "BUY", "price": 100.0})
 
         self.passphrase = old_passphrase
         return not result  # Should return True if it properly failed
@@ -91,19 +91,21 @@ class SignalSender:
         print("=" * 50)
 
         tests = [
-            ("AAPL", "BUY", 150.25, 50000000),
-            ("TSLA", "SELL", 245.75, 75000000),
-            ("BTC", "BUY", 42000.0, 1000000),
-            ("ETH", "SELL", 2500.0, 800000),
-            ("GOOGL", "BUY", 140.50, 25000000)
+            ("stock_001", {"ticker": "AAPL", "action": "BUY", "price": 150.25, "volume_24h": 50000000}),
+            ("stock_002", {"ticker": "TSLA", "action": "SELL", "price": 245.75, "volume_24h": 75000000}),
+            ("crypto_001", {"ticker": "BTC", "action": "BUY", "price": 42000.0, "volume_24h": 1000000}),
+            ("crypto_002", {"ticker": "ETH", "action": "SELL", "price": 2500.0, "volume_24h": 800000}),
+            ("options_001", {"type": "options", "ticker": "GOOGL", "strike": 140.50, "expiry": "2025-01-17", "action": "BUY_CALL"}),
+            ("multi_leg_001", [{"ticker": "SPY", "action": "BUY", "quantity": 100}, {"ticker": "QQQ", "action": "SELL", "quantity": 50}]),
+            ("stop_loss_001", {"trigger": "if AAPL < 145", "action": "SELL_ALL", "stop_loss": True})
         ]
 
         successful = 0
         total = len(tests)
 
-        for i, (ticker, action, price, volume) in enumerate(tests, 1):
+        for i, (signal_id, signal_data) in enumerate(tests, 1):
             print(f"\n--- Test {i}/{total} ---")
-            if self.send_signal(ticker, action, price, volume):
+            if self.send_signal(signal_id, signal_data):
                 successful += 1
             time.sleep(1)  # Small delay between requests
 
@@ -119,30 +121,42 @@ class SignalSender:
 
 def main():
     parser = argparse.ArgumentParser(description='Send trading signals to Mathematricks webhook')
-    parser.add_argument('--url', default='https://mathematricks.fund/api/signals',
-                       help='Signals endpoint URL')
+    parser.add_argument('--signalId', required=True,
+                       help='Unique signal identifier')
     parser.add_argument('--passphrase', default='yahoo123',
                        help='Webhook passphrase')
-    parser.add_argument('--ticker', help='Stock ticker (for single signal)')
-    parser.add_argument('--action', choices=['BUY', 'SELL'], help='Trading action')
-    parser.add_argument('--price', type=float, help='Stock price')
-    parser.add_argument('--volume', type=int, default=0, help='24h volume')
+    parser.add_argument('--current_timestamp',
+                       help='Current timestamp (ISO format, defaults to now)')
+    parser.add_argument('--signal', required=True,
+                       help='Signal data as JSON string (can be dict or list)')
+    parser.add_argument('--staging', action='store_true',
+                       help='Use staging environment')
     parser.add_argument('--test-suite', action='store_true',
                        help='Run full test suite')
 
     args = parser.parse_args()
 
-    sender = SignalSender(args.url, args.passphrase)
+    sender = SignalSender(args.passphrase, args.staging)
 
     if args.test_suite:
         sender.run_test_suite()
-    elif args.ticker and args.action and args.price is not None:
-        sender.send_signal(args.ticker, args.action, args.price, args.volume)
+    elif args.signalId and args.signal:
+        try:
+            # Parse signal JSON
+            import json
+            signal_data = json.loads(args.signal)
+            sender.send_signal(args.signalId, signal_data, args.current_timestamp)
+        except json.JSONDecodeError as e:
+            print(f"❌ Invalid JSON in --signal: {e}")
+            print("   Example: --signal '{\"ticker\": \"AAPL\", \"action\": \"BUY\", \"price\": 150.25}'")
     else:
         print("Usage examples:")
         print("  python signal_sender.py --test-suite")
-        print("  python signal_sender.py --ticker AAPL --action BUY --price 150.25")
-        print("  python signal_sender.py --ticker TSLA --action SELL --price 245.75 --volume 50000000")
+        print("  python signal_sender.py --signalId 'strategy_1_001' --signal '{\"ticker\": \"AAPL\", \"action\": \"BUY\", \"price\": 150.25}'")
+        print("  python signal_sender.py --staging --signalId 'strategy_1_001' --signal '{\"ticker\": \"AAPL\", \"action\": \"BUY\", \"price\": 150.25}'")
+        print("  python signal_sender.py --signalId 'multi_leg_001' --signal '[{\"ticker\": \"SPY\", \"action\": \"BUY\"}, {\"ticker\": \"QQQ\", \"action\": \"SELL\"}]'")
+        print("  python signal_sender.py --signalId 'options_001' --signal '{\"type\": \"options\", \"strike\": 150, \"expiry\": \"2025-01-17\", \"action\": \"BUY_CALL\"}'")
+        print("  python signal_sender.py --signalId 'stop_loss_001' --signal '{\"trigger\": \"if AAPL < 145\", \"action\": \"SELL_ALL\", \"stop_loss\": true}'")
 
 if __name__ == "__main__":
     main()

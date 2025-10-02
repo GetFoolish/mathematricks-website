@@ -54,9 +54,13 @@ class WebhookSignalCollector:
         try:
             print("🔄 Checking for missed signals from MongoDB...")
 
-            # Build query filter - only get signals not already processed
+            # Determine environment filter based on webhook URL
+            environment = "staging" if "staging" in self.webhook_url else "production"
+
+            # Build query filter - only get signals for this environment
             query_filter = {
-                'signal_processed': {'$ne': True}  # Only get unprocessed signals
+                'signal_processed': {'$ne': True},  # Only get unprocessed signals
+                'environment': environment  # Only get signals for this environment
             }
             if self.last_signal_timestamp:
                 try:
@@ -81,9 +85,9 @@ class WebhookSignalCollector:
                     # Reconstruct signal data from MongoDB format
                     signal_data = {
                         'timestamp': signal_doc.get('timestamp'),
-                        'signal_id': signal_doc.get('signal_id'),
-                        'epoch_time': signal_doc.get('epoch_time'),
-                        'signal': signal_doc.get('signal_data', {})
+                        'signal_id': signal_doc.get('signalID'),  # Fixed field name
+                        'epoch_time': signal_doc.get('signal_sent_EPOCH'),  # Fixed field name
+                        'signal': signal_doc.get('signal', {})  # Fixed: was 'signal_data', should be 'signal'
                     }
 
                     # Process as a caught-up signal
@@ -129,28 +133,41 @@ class WebhookSignalCollector:
 
         try:
 
-            # Set up change stream pipeline - only watch for inserts
-            pipeline = [
-                {'$match': {'operationType': 'insert'}}
-            ]
-
             # Start watching with resume token if we have one
             watch_options = {}
             if self.resume_token:
                 watch_options['resume_after'] = self.resume_token
                 print(f"🔄 Resuming from previous position")
 
-            # Open change stream
-            with self.mongodb_collection.watch(pipeline, **watch_options) as stream:
-                print("✅ Change Stream connected - waiting for signals...")
+            # Determine which environment we're monitoring
+            expected_environment = "staging" if "staging" in self.webhook_url else "production"
+
+            # Open change stream (watch all operations - we only insert anyway)
+            with self.mongodb_collection.watch([], **watch_options) as stream:
+                print(f"✅ Change Stream connected - waiting for {expected_environment} signals only...")
 
                 for change in stream:
                     try:
                         # Update resume token for reconnection resilience
                         self.resume_token = stream.resume_token
 
+                        # Only process insert operations (new signals)
+                        if change.get('operationType') != 'insert':
+                            continue
+
                         # Extract the new document
-                        new_document = change['fullDocument']
+                        new_document = change.get('fullDocument')
+                        if not new_document:
+                            print("⚠️ No document in change event")
+                            continue
+
+                        # Filter by environment - only process signals for this environment
+                        document_environment = new_document.get('environment', 'unknown')
+                        expected_environment = "staging" if "staging" in self.webhook_url else "production"
+
+                        if document_environment != expected_environment:
+                            # Ignore signals from other environments
+                            continue
 
                         # Convert to our signal format
                         received_time = new_document['received_at']
@@ -160,9 +177,9 @@ class WebhookSignalCollector:
                         # Reconstruct signal data from MongoDB format
                         signal_data = {
                             'timestamp': new_document.get('timestamp'),
-                            'signal_id': new_document.get('signal_id'),
-                            'epoch_time': new_document.get('epoch_time'),
-                            'signal': new_document.get('signal_data', {})
+                            'signal_id': new_document.get('signalID'),  # Fixed field name
+                            'epoch_time': new_document.get('signal_sent_EPOCH'),  # Fixed field name
+                            'signal': new_document.get('signal', {})  # Fixed: was 'signal_data', should be 'signal'
                         }
 
                         # Process as live signal
@@ -250,9 +267,9 @@ class WebhookSignalCollector:
         # Extract signal information
         timestamp = signal_data.get('timestamp', 'No timestamp')
         signal = signal_data.get('signal', {})
-        ticker = signal.get('ticker', 'UNKNOWN')
-        action = signal.get('action', 'UNKNOWN')
-        price = signal.get('price', 'N/A')
+
+        # Get signal ID from the data
+        signal_id_from_data = signal_data.get('signal_id') or signal_data.get('signalID')
 
         # Calculate delay if timestamp is provided
         delay = 0.0
@@ -270,12 +287,14 @@ class WebhookSignalCollector:
         }
         self.collected_signals.append(signal_record)
 
-        # Display signal information
+        # Display signal information - simplified format
         signal_type = "📥 CATCHUP" if is_catchup else "🔥 REAL-TIME SIGNAL DETECTED!"
         print(f"\n{signal_type}")
         if delay > 0:
             print(f"⚡ Delay: {delay:.3f} seconds")
-        print(f"📊 Ticker: {ticker} | Action: {action} | Price: {price}")
+        if signal_id_from_data:
+            print(f"🆔 Signal ID: {signal_id_from_data}")
+        print(f"📡 Signal: {signal}")
         if is_catchup:
             print(f"🔄 Caught up from MongoDB storage")
         print("─" * 60)
@@ -421,10 +440,17 @@ class WebhookSignalCollector:
         print("=" * 80)
 
 if __name__ == "__main__":
-    webhook_url = "https://mathematricks.fund"
+    import sys
+
+    # Check for staging flag
+    use_staging = "--staging" in sys.argv
+    webhook_url = "https://staging.mathematricks.fund" if use_staging else "https://mathematricks.fund"
+
+    env_name = "STAGING" if use_staging else "PRODUCTION"
     collector = WebhookSignalCollector(webhook_url)
 
-    print("🚀 Starting Mathematricks Fund Webhook Signal Collector")
+    print(f"🚀 Starting Mathematricks Fund Webhook Signal Collector ({env_name})")
+    print(f"🌐 Monitoring: {webhook_url}")
     print()
 
     collector.monitor_signals()
