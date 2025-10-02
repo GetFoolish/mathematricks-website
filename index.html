@@ -496,7 +496,7 @@
         <div class="container">
             <h2 class="section-title">Get In Touch</h2>
             <p class="text-center" style="margin-bottom: 2.5rem; font-size: 0.95rem; opacity: 0.7;">What's on your mind?</p>
-            <form class="contact-form" action="mailto:vandan@getfoolish.com" method="post" enctype="text/plain">
+            <form class="contact-form" method="post" netlify name="contact" data-netlify="true">
                 <div class="form-group">
                     <label for="name">Name *</label>
                     <input type="text" id="name" name="name" required>
@@ -568,47 +568,39 @@
             const formData = new FormData(this);
             const queryType = formData.get('query-type');
 
-            // Create email body
-            const emailBody = `
-Name: ${formData.get('name')}
-Email: ${formData.get('email')}
-Company: ${formData.get('company') || 'Not provided'}
-Query Type: ${queryType}
+            // Submit form to Netlify
+            fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData).toString()
+            })
+            .then(() => {
+                // Show auto-reply message
+                let autoReply = '';
+                switch(queryType) {
+                    case 'investment':
+                        autoReply = "Fund is currently closed to new capital. You're on our shortlist for when slots open.";
+                        break;
+                    case 'fund-admin':
+                        autoReply = "Thank you for your inquiry. Our team will review and be in touch if there's a potential fit.";
+                        break;
+                    case 'sales':
+                        autoReply = "We're currently full but interested in world-class distribution partners for future expansion.";
+                        break;
+                    case 'strategy':
+                        autoReply = "Your message has been fast-tracked to our quant team. You'll hear from us shortly.";
+                        break;
+                    default:
+                        autoReply = "Thank you for your message. We'll be in touch soon.";
+                }
 
-Message:
-${formData.get('message')}
-            `.trim();
-
-            // Create mailto link
-            const subject = `Mathematrics Contact Form - ${queryType}`;
-            const mailtoLink = `mailto:vandan@getfoolish.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-
-            // Open email client
-            window.location.href = mailtoLink;
-
-            // Show auto-reply message
-            let autoReply = '';
-            switch(queryType) {
-                case 'investment':
-                    autoReply = "Fund is currently closed to new capital. You're on our shortlist for when slots open.";
-                    break;
-                case 'fund-admin':
-                    autoReply = "Thank you for your inquiry. Our team will review and be in touch if there's a potential fit.";
-                    break;
-                case 'sales':
-                    autoReply = "We're currently full but interested in world-class distribution partners for future expansion.";
-                    break;
-                case 'strategy':
-                    autoReply = "Your message has been fast-tracked to our quant team. You'll hear from us shortly.";
-                    break;
-                default:
-                    autoReply = "Thank you for your message. We'll be in touch soon.";
-            }
-
-            setTimeout(() => {
                 alert(autoReply);
                 this.reset();
-            }, 500);
+            })
+            .catch((error) => {
+                alert('There was an error sending your message. Please try again.');
+                console.error('Error:', error);
+            });
         });
 
         // Add offset for fixed header when scrolling to sections
