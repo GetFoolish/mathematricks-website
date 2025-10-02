@@ -75,3 +75,6 @@ ssh_keys/
 # Local development
 .local/
 local_config.py
+
+# Junk directory
+junk/
