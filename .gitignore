@@ -78,3 +78,5 @@ local_config.py
 
 # Junk directory
 junk/
+# Local Netlify folder
+.netlify

@@ -73,6 +73,7 @@ exports.handler = async (event, context) => {
             .language-selector {
                 display: flex;
                 gap: 1rem;
+                margin-top: 1.15rem;
                 margin-bottom: 1.5rem;
                 flex-wrap: wrap;
             }
