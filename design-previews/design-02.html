@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematricks Fun(d) - Multi-Strategy Quantitative Hedge Fund</title>
+    <style>
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #00ff00; line-height: 1.6; font-size: 14px; }
+        header { border-bottom: 1px solid #00ff00; padding: 1rem 2rem; }
+        nav { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto; }
+        .brand-logo { font-size: 1rem; font-weight: 700; }
+        .brand-logo::before { content: '> '; }
+        .accent-m { background: #00ff00; color: #000; padding: 0.1em 0.3em; }
+        .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+        .nav-links a { color: #00ff00; text-decoration: none; font-size: 0.875rem; }
+        .nav-links a::before { content: '['; }
+        .nav-links a::after { content: ']'; }
+        .menu-toggle { display: none; background: none; border: 1px solid #00ff00; color: #00ff00; }
+        section, .hero { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; border-bottom: 1px solid #003300; }
+        section:last-of-type { border-bottom: none; }
+        .container { max-width: 100%; }
+        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; }
+        h1::before { content: '$ '; }
+        h2, .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
+        h2::before, .section-title::before { content: '// '; }
+        h3 { font-size: 1rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        h3::before { content: '-- '; }
+        p { margin-bottom: 1rem; color: #00dd00; }
+        .subtitle, .inspired-by { opacity: 0.6; margin-bottom: 1rem; }
+        .description { margin-bottom: 2rem; }
+        .section-grid { display: block; }
+        .section-content { margin-top: 1rem; }
+        .edge-cards { display: block; margin-top: 2rem; }
+        .edge-card { margin-bottom: 2rem; }
+        .highlight { background: #00ff00; color: #000; padding: 0.2em 0.4em; }
+        footer { text-align: center; padding: 2rem; font-size: 0.75rem; opacity: 0.5; border-top: 1px solid #003300; }
+        .contact-form { max-width: 500px; margin: 0 auto; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; }
+        input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #00ff00; background: #000; color: #00ff00; font-family: inherit; font-size: 0.875rem; }
+        textarea { min-height: 100px; }
+        .submit-btn { background: #00ff00; color: #000; border: none; padding: 0.75rem 1.5rem; cursor: pointer; font-family: inherit; font-weight: 700; }
+        .text-center { text-align: center; }
+    
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="brand-logo">
+                <span>MATHE</span><span class="accent-m">M</span><span>ATRICS</span>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#edge">Our Edge</a></li>
+                <li><a href="#crew">The Crew</a></li>
+                <li><a href="#fine-print">The Fine Print</a></li>
+                <li><a href="#risk">Risk</a></li>
+                <li><a href="#contact">Get In Touch</a></li>
+            </ul>
+            <button class="menu-toggle" id="menuToggle">☰</button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero binary-pattern">
+        <div class="container">
+            <p class="subtitle">MatheMatricks Fun(D)</p>
+            <h1>Making Money Shouldn't Be This Fun.</h1>
+            <div class="description">
+                <p>Let's drop the pretense. You're not here for a mission statement about "changing the world." You're here to turn a large pile of money into a larger pile of money.</p>
+                <p>So here we are. Cold, hard, beautiful math—deployed across a multi-strategy quantitative fund that's built to perform. We're not selling a fairy-tale. We're selling a result.</p>
+            </div>
+            <p class="inspired-by">Inspired by Data</p>
+        </div>
+    </section>
+
+    <!-- Our Edge Section -->
+    <section id="edge">
+        <div class="container">
+            <h2 class="section-title">Our Edge</h2>
+            <div class="edge-cards">
+                <div class="edge-card">
+                    <h3>Talent Acquisition</h3>
+                    <p>We attract brilliant quants by replacing soul-crushing bureaucracy with a simple formula: intellectual freedom, a mandate to think differently. Sure, enormous piles of capital helps.</p>
+                </div>
+                <div class="edge-card">
+                    <h3>Strategy Diversity</h3>
+                    <p>We don't have a single 'golden goose.' That's how funds die. We run a swarm of 15+ automated strategies. Some might zig while others zag. Some might take a nap. The point is, the swarm as a whole is a relentless, honey-badger-of-a-thing that constantly hunts for alpha.</p>
+                </div>
+                <div class="edge-card">
+                    <h3>Our Secret Sauce (aka The Algorithm)</h3>
+                    <p>Our allocation algorithm is the sociopathic CEO of the strategy team. It has no ego. It feels no loyalty. If a strategy underperforms, it doesn't get a warning or a bad performance review. It gets its capital cut. Immediately. This brutal, unemotional discipline keeps the whole machine ruthlessly efficient.</p>
+                </div>
+            </div>
+            <p style="margin-top: 2.5rem; text-align: center; font-style: italic; opacity: 0.8; font-size: 0.9rem;">Result: An equity curve that looks like a piece of art. It should be on a wall in MoMA*</p>
+        </div>
+    </section>
+
+    <!-- The Crew Section -->
+    <section id="crew">
+        <div class="container">
+            <div class="section-grid">
+                <h2 class="section-title">The Crew</h2>
+                <div class="section-content">
+                    <p><strong>Vandan, Gagan, Angelica.</strong></p>
+                    <p>That's the in-house crew. We're small, which means we're not bogged down by committees, corporate retreats, or HR departments. The day-to-day—the investor outreach, the alpha development, the stuff that makes the engine roar—is handled by a global network of professionals who are the best at what they do.</p>
+                    <p><span class="highlight">We don't hire employees; we partner with killers.</span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fund Legal Section -->
+    <section id="fund-legal">
+        <div class="container">
+            <div class="section-grid">
+                <h2 class="section-title">Fund Legal</h2>
+                <div class="section-content">
+                    <p>We're a Delaware registered fund with people in Dubai and Toronto. Why? Because algorithms don't care about prestigious postcodes, and the best quantitative minds aren't all crammed into one square mile of Manhattan. We hunt for alpha wherever in the world it lives, and we hire genius wherever we find it. Being outside the financial echo chamber isn't a strategy; it's a prerequisite for independent thought.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Alignment Section -->
+    <section id="alignment">
+        <div class="container">
+            <div class="section-grid">
+                <h2 class="section-title">Alignment of Interest</h2>
+                <div class="section-content">
+                    <p>Let's make this one brutally simple. There is one non-negotiable rule at this firm: if you work here, you invest here. (actual money, not just time)</p>
+                    <p>Every single person you will ever speak to from Mathematrics—from the founders, to the person who answers the phone—has their own personal capital in the fund. It is a pre-condition of their employment. We don't hire employees; we partner with believers (can we say Beliebers, here? risky. might not age well).</p>
+                    <p>But on a more serious note, this purifies the conversation. When we talk about risk and performance, we're not just talking about your money. We're talking about <em>our</em> money. End of discussion.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fine Print Section -->
+    <section id="fine-print">
+        <div class="container">
+            <div class="section-grid">
+                <h2 class="section-title">The Fine Print</h2>
+                <div class="section-content">
+                    <p><strong>Minimum Investment:</strong> $2 million.</p>
+                    <p><strong>Management Fee:</strong> 4%.</p>
+                    <p><strong>Performance Fee:</strong> 30%.</p>
+                    <p><strong>Liquidity:</strong> 100% liquid. Need your money? You'll get it, with a 5-day heads-up. We find it absurd that other funds make you beg for your own capital. It's your money, not a hostage. and it does not have Stockholm syndrome.</p>
+                    <p><strong>Reporting:</strong> Live NAV, refreshed constantly. Plus a no-bullshit note from the Fund Manager once a month.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Risk Management Section -->
+    <section id="risk">
+        <div class="container">
+            <h2 class="section-title">Risk Management</h2>
+            <p class="text-center" style="margin-bottom: 2.5rem; font-size: 0.95rem; opacity: 0.7;">We love country music, but we're not cowboys. We handle volatile assets with extreme precision, respect, and a healthy dose of paranoia.</p>
+            <div class="edge-cards">
+                <div class="edge-card">
+                    <h3>The Kill Switches</h3>
+                    <p>We have hard stop-losses and automated exposure caps. These aren't guidelines; they're digital tripwires designed to prevent a bad day from turning into a cataclysm.</p>
+                </div>
+                <div class="edge-card">
+                    <h3>The Paranoia Engine</h3>
+                    <p>The market is a psycho. Our dynamic framework constantly monitors volatility and correlations, adapting our posture in real-time before the market's mood swings get the best of us.</p>
+                </div>
+                <div class="edge-card">
+                    <h3>Apocalypse Drills</h3>
+                    <p>We've torture-tested our models against every nightmare scenario we could find: the Dot-Com bust, the 2008 GFC, the 2020 Covid crash, the Russian default, the Asian currency crisis. We even ran simulations for an AI-induced flash crash and a global shipping lockdown caused by a single, very stubborn whale. The models blinked, spat out some coffee, but held together. (Phew.)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <p class="text-center" style="margin-bottom: 2.5rem; font-size: 0.95rem; opacity: 0.7;">What's on your mind?</p>
+            <form class="contact-form" method="post" netlify name="contact" data-netlify="true">
+                <input type="hidden" name="form-name" value="contact" />
+                <div class="form-group">
+                    <label for="name">Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="company">Company</label>
+                    <input type="text" id="company" name="company">
+                </div>
+                <div class="form-group">
+                    <label for="query-type">Query Type *</label>
+                    <select id="query-type" name="query-type" required>
+                        <option value="">Select a query type</option>
+                        <option value="investment">Investment Query</option>
+                        <option value="fund-admin">Fund Admin Query</option>
+                        <option value="sales">Sales Query</option>
+                        <option value="strategy">Strategy Partnership</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message *</label>
+                    <textarea id="message" name="message" required></textarea>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Mathematrics Fun(D). All rights reserved. | We're a multi-strategy quantitative hedge fund. You get it.</p>
+        </div>
+    </footer>
+</body>
+</html>
