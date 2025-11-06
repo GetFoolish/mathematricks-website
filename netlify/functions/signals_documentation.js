@@ -28,80 +28,117 @@ exports.handler = async (event, context) => {
             }
 
             body {
-                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-                background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-                color: white;
+                font-family: 'Arial', sans-serif;
+                background: #fafafa;
+                color: #0a0a0a;
                 line-height: 1.6;
-                min-height: 100vh;
-                padding: 2rem;
+                font-size: 16px;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
             }
 
             .container {
-                max-width: 1200px;
+                max-width: 900px;
                 margin: 0 auto;
+                padding: 4rem 2rem;
+                background: #fff;
+                border: 3px solid #000;
+                box-shadow: 8px 8px 0 rgba(0,0,0,1);
+                position: relative;
             }
 
             h1 {
                 font-size: 2.5rem;
-                font-weight: 300;
+                font-weight: 900;
                 margin-bottom: 1rem;
-                color: #4CAF50;
-                text-align: center;
+                line-height: 1.1;
+                position: relative;
+                display: inline-block;
+            }
+
+            h1::after {
+                content: '';
+                position: absolute;
+                bottom: -10px;
+                left: 0;
+                width: 60%;
+                height: 8px;
+                background: #ffeb3b;
+                z-index: -1;
             }
 
             .subtitle {
-                text-align: center;
-                color: #ccc;
+                text-align: left;
+                color: #0a0a0a;
+                opacity: 0.7;
                 margin-bottom: 3rem;
-                font-size: 1.2rem;
+                font-size: 1rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 2px;
             }
 
             .section {
-                background: rgba(255, 255, 255, 0.05);
-                border-radius: 10px;
-                padding: 2rem;
-                margin-bottom: 2rem;
-                border: 1px solid rgba(76, 175, 80, 0.2);
+                margin-bottom: 3rem;
+                padding-bottom: 2rem;
             }
 
             .section h2 {
-                color: #4CAF50;
-                margin-bottom: 1rem;
-                font-size: 1.5rem;
+                font-size: 1.75rem;
+                font-weight: 900;
+                margin-bottom: 2rem;
+                border-bottom: 4px solid #000;
+                padding-bottom: 0.5rem;
+                position: relative;
+            }
+
+            .section h2::before {
+                content: '▪';
+                color: #ffeb3b;
+                margin-right: 0.5rem;
+                font-size: 2rem;
+                vertical-align: middle;
             }
 
             .language-selector {
                 display: flex;
-                gap: 1rem;
-                margin-top: 1.15rem;
+                gap: 0;
+                margin-top: 1.5rem;
                 margin-bottom: 1.5rem;
                 flex-wrap: wrap;
             }
 
             .lang-btn {
-                background: rgba(76, 175, 80, 0.2);
-                border: 2px solid #4CAF50;
-                color: white;
+                background: #fff;
+                border: 2px solid #000;
+                color: #000;
                 padding: 0.5rem 1rem;
-                border-radius: 5px;
                 cursor: pointer;
-                transition: all 0.3s;
+                transition: all 0.2s;
                 font-family: inherit;
+                font-size: 0.875rem;
+                margin-left: -2px;
+                font-weight: 700;
+            }
+
+            .lang-btn:first-child {
+                margin-left: 0;
             }
 
             .lang-btn:hover, .lang-btn.active {
-                background: #4CAF50;
-                color: #1a1a1a;
+                background: #000;
+                color: #fff;
+                transform: translateY(-2px);
             }
 
             .code-block {
                 background: #0d1117;
-                border: 1px solid #30363d;
-                border-radius: 8px;
+                border: 3px solid #000;
                 padding: 1.5rem;
                 margin: 1rem 0;
                 position: relative;
                 overflow-x: auto;
+                box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
             }
 
             .code-block pre {
@@ -109,45 +146,137 @@ exports.handler = async (event, context) => {
                 color: #e6edf3;
                 font-size: 0.9rem;
                 white-space: pre-wrap;
+                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             }
 
             .copy-btn {
                 position: absolute;
                 top: 10px;
                 right: 10px;
-                background: #4CAF50;
-                color: #1a1a1a;
-                border: none;
+                background: #000;
+                color: #fff;
+                border: 3px solid #000;
                 padding: 0.5rem 1rem;
-                border-radius: 4px;
                 cursor: pointer;
                 font-size: 0.8rem;
-                transition: background 0.3s;
+                transition: all 0.2s;
+                font-weight: 900;
+                box-shadow: 2px 2px 0 #ffeb3b;
             }
 
             .copy-btn:hover {
-                background: #45a049;
+                transform: translate(-2px, -2px);
+                box-shadow: 4px 4px 0 #ffeb3b;
             }
 
             .copy-btn.copied {
-                background: #FF9800;
+                background: #ffeb3b;
+                color: #000;
             }
 
             .example-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 1.5rem;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
                 margin-top: 1.5rem;
             }
 
             .example-card {
-                background: rgba(255, 255, 255, 0.05);
-                border-radius: 8px;
+                background: #fff;
+                border: 3px solid #000;
                 padding: 1.5rem;
-                border: 1px solid rgba(76, 175, 80, 0.2);
+                box-shadow: 6px 6px 0 #ffeb3b;
+                transition: all 0.3s;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .example-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background: linear-gradient(90deg, #000 50%, #ffeb3b 50%);
+            }
+
+            .example-card:hover {
+                transform: translate(-4px, -4px);
+                box-shadow: 10px 10px 0 #ffeb3b;
             }
 
             .example-card h4 {
+                color: #000;
+                margin-bottom: 1rem;
+                font-weight: 900;
+                font-size: 1.125rem;
+            }
+
+            .example-card .code-block {
+                margin: 0;
+                padding: 1rem;
+                font-size: 0.8rem;
+            }
+
+            .url-section {
+                background: #fff;
+                border: 3px solid #000;
+                padding: 1.5rem;
+                margin: 1rem 0;
+                box-shadow: 4px 4px 0 #ffeb3b;
+            }
+
+            .url-section h3 {
+                color: #000;
+                margin-bottom: 0.5rem;
+                font-weight: 900;
+                font-size: 1.125rem;
+            }
+
+            .url-section p {
+                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                background: #f5f5f5;
+                padding: 0.5rem;
+                border: 2px solid #000;
+                display: inline-block;
+            }
+
+            ul {
+                margin-left: 2rem;
+                margin-top: 1rem;
+            }
+
+            ul li {
+                margin-bottom: 0.75rem;
+            }
+
+            ul li strong {
+                font-weight: 900;
+            }
+
+            p {
+                margin-bottom: 1rem;
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    padding: 1rem;
+                }
+
+                .container {
+                    padding: 2rem 1rem;
+                }
+
+                h1 {
+                    font-size: 2rem;
+                }
+
+                .language-selector {
+                    justify-content: flex-start;
+                }
+            }
+        </style>
                 color: #4CAF50;
                 margin-bottom: 0.5rem;
             }
