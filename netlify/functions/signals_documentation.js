@@ -277,37 +277,6 @@ exports.handler = async (event, context) => {
                 }
             }
         </style>
-                color: #4CAF50;
-                margin-bottom: 0.5rem;
-            }
-
-            .url-section {
-                background: rgba(255, 193, 7, 0.1);
-                border: 1px solid #FFC107;
-                border-radius: 8px;
-                padding: 1rem;
-                margin: 1rem 0;
-            }
-
-            .url-section h3 {
-                color: #FFC107;
-                margin-bottom: 0.5rem;
-            }
-
-            @media (max-width: 768px) {
-                body {
-                    padding: 1rem;
-                }
-
-                h1 {
-                    font-size: 2rem;
-                }
-
-                .language-selector {
-                    justify-content: center;
-                }
-            }
-        </style>
     </head>
     <body>
         <div class="container">
