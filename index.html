@@ -5,358 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mathematricks Fun(d) - Multi-Strategy Quantitative Hedge Fund</title>
     <style>
-        /* CSS Variables for Design System */
-        :root {
-            --brand-magenta: hsl(332, 73%, 60%);
-            --brand-text: hsl(0, 0%, 0%);
-            --brand-bg: hsl(0, 0%, 100%);
-            --brand-muted: hsl(0, 0%, 95%);
-            --brand-border: hsl(0, 0%, 90%);
-            --brand-text-muted: hsl(0, 0%, 40%);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --brand-text: hsl(0, 0%, 100%);
-                --brand-bg: hsl(0, 0%, 8%);
-                --brand-muted: hsl(0, 0%, 15%);
-                --brand-border: hsl(0, 0%, 20%);
-                --brand-text-muted: hsl(0, 0%, 65%);
-            }
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            background: var(--brand-bg);
-            color: var(--brand-text);
-            line-height: 1.6;
-            font-size: 14px;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        /* Header */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: var(--brand-bg);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--brand-border);
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-        }
-
-        .brand-logo {
-            font-family: 'Inter', sans-serif;
-            font-weight: 300;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            font-size: 1.2rem;
-        }
-
-        .brand-logo .accent-m {
-            background: var(--brand-magenta);
-            color: white;
-            padding: 0.1em 0.15em;
-            border-radius: 2px;
-            font-weight: 600;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--brand-text);
-            text-decoration: none;
-            font-size: 0.8rem;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .nav-links a:hover {
-            opacity: 1;
-        }
-
-        /* Mobile menu toggle */
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--brand-text);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--brand-bg);
-                flex-direction: column;
-                padding: 1rem;
-                border-bottom: 1px solid var(--brand-border);
-                gap: 0.5rem;
-            }
-
-            .nav-links.active {
-                display: flex;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-        }
-
-        /* Binary Pattern Background */
-        .binary-pattern {
-            position: relative;
-            background-image:
-                radial-gradient(circle at 25% 25%, hsla(332, 73%, 60%, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, hsla(332, 73%, 60%, 0.02) 0%, transparent 50%);
-        }
-
-        .binary-pattern::before {
-            content: "010010011001100000111 10010011100101010100101 01100110001010010110101 1001010100010101110110 010010011001100010010 1001001110010101011101 0110011000101001011010 1001010100010101111010";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.6rem;
-            color: hsla(332, 73%, 60%, 0.05);
-            line-height: 1.8;
-            overflow: hidden;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: #fafafa; color: #0a0a0a; line-height: 1.6; font-size: 16px; padding-top: 80px; position: relative; overflow-x: hidden; }
+        body::before { 
+            content: ''; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            opacity: 0.03; 
+            z-index: 0;
             pointer-events: none;
-            z-index: -1;
-            white-space: pre-wrap;
-            word-break: break-all;
         }
-
-        /* Sections */
-        section {
-            padding: 4rem 0;
-            border-bottom: 1px solid var(--brand-border);
+        /* Original 5 patterns */
+        body.pattern-1::before { background: repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 20px); }
+        body.pattern-2::before { background: repeating-conic-gradient(#000 0deg 5deg, transparent 5deg 30deg); }
+        body.pattern-3::before { background: radial-gradient(circle at 25px 25px, #000 2px, transparent 2px), radial-gradient(circle at 75px 75px, #000 2px, transparent 2px); background-size: 100px 100px; }
+        body.pattern-4::before { background: repeating-linear-gradient(0deg, #000 0, #000 1px, transparent 1px, transparent 15px), repeating-linear-gradient(90deg, #000 0, #000 1px, transparent 1px, transparent 15px); }
+        body.pattern-5::before { background: linear-gradient(45deg, transparent 48%, #000 48%, #000 52%, transparent 52%), linear-gradient(-45deg, transparent 48%, #000 48%, #000 52%, transparent 52%); background-size: 30px 30px; }
+        /* 25 New patterns */
+        body.pattern-6::before { background: repeating-linear-gradient(0deg, #000 0, #000 1px, transparent 1px, transparent 4px), repeating-linear-gradient(90deg, #000 0, #000 1px, transparent 1px, transparent 4px); background-size: 40px 40px; }
+        body.pattern-7::before { background: radial-gradient(circle, #000 1px, transparent 1px); background-size: 20px 20px; }
+        body.pattern-8::before { background: linear-gradient(135deg, #000 25%, transparent 25%), linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(315deg, #000 25%, transparent 25%); background-size: 20px 20px; background-position: 10px 0, 10px 0, 0 0, 0 0; }
+        body.pattern-9::before { background: repeating-linear-gradient(90deg, #000 0, #000 2px, transparent 2px, transparent 10px), repeating-linear-gradient(0deg, #000 0, #000 2px, transparent 2px, transparent 10px); }
+        body.pattern-10::before { background: conic-gradient(from 45deg at 50% 50%, #000 0deg 90deg, transparent 90deg 180deg, #000 180deg 270deg, transparent 270deg); background-size: 30px 30px; }
+        body.pattern-11::before { background: repeating-linear-gradient(60deg, #000 0, #000 2px, transparent 2px, transparent 12px); }
+        body.pattern-12::before { background: repeating-linear-gradient(120deg, #000 0, #000 2px, transparent 2px, transparent 12px); }
+        body.pattern-13::before { background: radial-gradient(ellipse at center, #000 0%, #000 10%, transparent 10%, transparent 100%); background-size: 25px 25px; }
+        body.pattern-14::before { background: linear-gradient(0deg, #000 50%, transparent 50%), linear-gradient(90deg, #000 50%, transparent 50%); background-size: 15px 15px; }
+        body.pattern-15::before { background: repeating-conic-gradient(from 0deg, #000 0deg 30deg, transparent 30deg 60deg); }
+        body.pattern-16::before { background: radial-gradient(circle at 20% 50%, #000 2px, transparent 2px), radial-gradient(circle at 80% 50%, #000 2px, transparent 2px); background-size: 50px 50px; }
+        body.pattern-17::before { background: linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(-45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000); background-size: 16px 16px; }
+        body.pattern-18::before { background: repeating-linear-gradient(0deg, #000, #000 3px, transparent 3px, transparent 6px), repeating-linear-gradient(90deg, #000, #000 3px, transparent 3px, transparent 6px); background-size: 24px 24px; }
+        body.pattern-19::before { background: radial-gradient(circle at 10px 10px, #000 3px, transparent 3px); background-size: 30px 30px; }
+        body.pattern-20::before { background: conic-gradient(#000 0.25turn, transparent 0.25turn 0.5turn, #000 0.5turn 0.75turn, transparent 0.75turn); background-size: 40px 40px; }
+        body.pattern-21::before { background: repeating-linear-gradient(-45deg, #000 0, #000 2px, transparent 2px, transparent 8px), repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 8px); }
+        body.pattern-22::before { background: linear-gradient(90deg, #000 1px, transparent 1px), linear-gradient(0deg, #000 1px, transparent 1px); background-size: 20px 20px; }
+        body.pattern-23::before { background: radial-gradient(circle, transparent 20%, #000 20%, #000 25%, transparent 25%); background-size: 35px 35px; }
+        body.pattern-24::before { background: repeating-linear-gradient(30deg, #000 0, #000 1px, transparent 1px, transparent 10px), repeating-linear-gradient(150deg, #000 0, #000 1px, transparent 1px, transparent 10px); }
+        body.pattern-25::before { background: conic-gradient(from 90deg at 2px 2px, #000 90deg, transparent 0); background-size: 12px 12px; }
+        body.pattern-26::before { background: linear-gradient(0deg, transparent 45%, #000 45%, #000 55%, transparent 55%), linear-gradient(90deg, transparent 45%, #000 45%, #000 55%, transparent 55%); background-size: 25px 25px; }
+        body.pattern-27::before { background: radial-gradient(circle at 50% 0, #000 2px, transparent 2px), radial-gradient(circle at 0% 50%, #000 2px, transparent 2px), radial-gradient(circle at 50% 100%, #000 2px, transparent 2px), radial-gradient(circle at 100% 50%, #000 2px, transparent 2px); background-size: 60px 60px; }
+        body.pattern-28::before { background: repeating-conic-gradient(from 15deg, #000 0deg 15deg, transparent 15deg 45deg); }
+        body.pattern-29::before { background: linear-gradient(135deg, #000 21%, transparent 21%, transparent 24%, #000 24%, #000 26%, transparent 26%, transparent 74%, #000 74%, #000 76%, transparent 76%, transparent 79%, #000 79%); background-size: 18px 18px; }
+        body.pattern-30::before { background: radial-gradient(circle at 100% 100%, transparent 9px, #000 9px, #000 11px, transparent 11px), radial-gradient(circle at 0 0, transparent 9px, #000 9px, #000 11px, transparent 11px); background-size: 40px 40px; background-position: 0 0, 20px 20px; }
+        header { position: fixed; top: 0; left: 0; right: 0; background: #fff; border-bottom: 5px solid #000; padding: 1.5rem 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; }
+        nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .brand-logo { font-size: 1.25rem; font-weight: 900; border: 3px solid #000; padding: 0.5rem 1rem; position: relative; }
+        .brand-logo::before { content: ''; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; border: 2px solid #ffeb3b; z-index: -1; }
+        .accent-m { background: #000; color: #fff; padding: 0.1em 0.3em; }
+        .nav-links { display: flex; gap: 0; list-style: none; }
+        .nav-links a { color: #000; text-decoration: none; font-size: 0.875rem; border: 2px solid #000; padding: 0.5rem 1rem; margin-left: -2px; transition: all 0.2s; }
+        .nav-links a:hover { background: #000; color: #fff; transform: translateY(-2px); }
+        .menu-toggle { display: none; background: #000; color: #fff; border: 3px solid #000; padding: 0.5rem 1rem; }
+        section, .hero { max-width: 900px; margin: 0 auto; padding: 4rem 2rem; background: #fff; margin-top: 2rem; border: 3px solid #000; box-shadow: 8px 8px 0 rgba(0,0,0,1); position: relative; scroll-margin-top: 90px; }
+        section::before { content: ''; position: absolute; top: 15px; right: 15px; width: 80px; height: 80px; background: linear-gradient(45deg, #ffeb3b 25%, transparent 25%, transparent 75%, #ffeb3b 75%), linear-gradient(45deg, #ffeb3b 25%, transparent 25%, transparent 75%, #ffeb3b 75%); background-size: 20px 20px; background-position: 0 0, 10px 10px; opacity: 0.3; }
+        .hero::before { width: 150px; height: 150px; background: repeating-linear-gradient(45deg, #000, #000 2px, transparent 2px, transparent 10px); opacity: 0.05; }
+        .container { max-width: 100%; }
+        h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 2rem; line-height: 1.1; position: relative; display: inline-block; }
+        h1::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 60%; height: 8px; background: #ffeb3b; z-index: -1; }
+        .shared-m-title { 
+            font-size: 2rem; 
+            font-weight: 900; 
+            line-height: 1.2; 
+            margin-bottom: 2rem; 
+            position: relative;
+            color: #000;
         }
-
-        section:last-of-type {
-            border-bottom: none;
+        .shared-m-title::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 50%; height: 8px; background: #ffeb3b; z-index: -1; }
+        h2, .section-title { font-size: 1.75rem; font-weight: 900; margin-bottom: 2rem; border-bottom: 4px solid #000; padding-bottom: 0.5rem; position: relative; }
+        h2::before, .section-title::before { content: '▪'; color: #ffeb3b; margin-right: 0.5rem; font-size: 2rem; vertical-align: middle; }
+        h3 { font-size: 1.125rem; font-weight: 900; margin-top: 2rem; margin-bottom: 0.5rem; padding: 0.75rem 1.25rem; border: 3px solid #000; background: #fff; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); display: block; width: 100%; }
+        h3::before { 
+            content: '';
         }
-
-        .hero {
-            min-height: 70vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            border-bottom: 1px solid var(--brand-border);
-        }
-
-        .hero .subtitle {
-            font-size: 1rem;
-            opacity: 0.6;
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.1em;
-        }
-
-        .hero h1 {
-            font-size: clamp(1.8rem, 4vw, 2.5rem);
-            font-weight: 300;
-            margin-bottom: 2.5rem;
-            line-height: 1.2;
-        }
-
-        .hero .description {
-            max-width: 700px;
-            margin: 0 auto 3rem;
-            font-size: 0.95rem;
-            opacity: 0.8;
-            line-height: 1.7;
-        }
-
-        .hero .description p {
-            margin-bottom: 1.2rem;
-        }
-
-        .inspired-by {
-            font-size: 0.75rem;
-            opacity: 0.4;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-        }
-
-        /* Content sections */
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: 300;
-            margin-bottom: 2.5rem;
-            text-align: center;
-        }
-
-        .section-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 3rem;
-            align-items: start;
-        }
-
-        @media (max-width: 768px) {
-            .section-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-
-            .section-title {
-                text-align: left;
-                margin-bottom: 1.5rem;
-            }
-        }
-
-        .section-content {
-            font-size: 0.9rem;
-        }
-
-        .section-content p {
-            margin-bottom: 1.2rem;
-            line-height: 1.7;
-        }
-
-        .edge-cards {
-            display: grid;
-            gap: 2.5rem;
-            margin-top: 2rem;
-        }
-
-        .edge-card h3 {
-            font-size: 1rem;
-            margin-bottom: 0.8rem;
-            color: var(--brand-magenta);
-            font-weight: 600;
-        }
-
-        .edge-card p {
-            line-height: 1.7;
-            font-size: 0.9rem;
-        }
-
-        /* Contact Form */
-        .contact-form {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.4rem;
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.7rem;
-            border: 1px solid var(--brand-border);
-            background: var(--brand-bg);
-            color: var(--brand-text);
-            font-family: inherit;
-            font-size: 0.8rem;
-            border-radius: 3px;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--brand-magenta);
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .submit-btn {
-            background: var(--brand-magenta);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            font-family: inherit;
-            font-size: 0.8rem;
-            cursor: pointer;
-            border-radius: 3px;
-            transition: opacity 0.2s;
-        }
-
-        .submit-btn:hover {
-            opacity: 0.9;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 2rem 0;
-            border-top: 1px solid var(--brand-border);
-            font-size: 0.75rem;
-            opacity: 0.5;
-        }
-
-        /* Utilities */
-        .text-center {
-            text-align: center;
-        }
-
-        .highlight {
-            background: var(--brand-magenta);
-            color: white;
-            padding: 0.2em 0.4em;
-            border-radius: 2px;
-        }
-
-        /* Refined spacing */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 1.5rem;
-            }
-
-            section {
-                padding: 3rem 0;
-            }
-
-            .hero {
-                padding: 2rem 0;
-            }
-        }
+        p { margin-bottom: 1rem; }
+        .subtitle, .inspired-by { font-size: 0.875rem; opacity: 0.7; margin-bottom: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+        .description { margin-bottom: 2rem; }
+        .section-grid { display: block; }
+        .section-content { margin-top: 1rem; }
+        .edge-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .edge-card { margin-bottom: 0; padding: 2rem; border: 3px solid #000; background: #fff; box-shadow: 6px 6px 0 #ffeb3b; transition: all 0.3s; position: relative; overflow: hidden; }
+        .edge-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #000 50%, #ffeb3b 50%); }
+        .edge-card:hover { transform: translate(-4px, -4px); box-shadow: 10px 10px 0 #ffeb3b; }
+        .highlight { background: #000; color: #fff; padding: 0.2em 0.4em; box-shadow: 4px 4px 0 #ffeb3b; }
+        footer { text-align: center; padding: 3rem 2rem; font-size: 0.75rem; opacity: 0.6; }
+        .contact-form { max-width: 500px; margin: 0 auto; padding: 2rem; border: 3px solid #000; background: #f9f9f9; box-shadow: 6px 6px 0 #ffeb3b; }
+        .form-group { margin-bottom: 1.5rem; position: relative; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        input, select, textarea { width: 100%; padding: 0.75rem; border: 3px solid #000; background: #fff; color: #000; font-family: inherit; font-size: 0.875rem; transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; box-shadow: 4px 4px 0 #ffeb3b; transform: translate(-2px, -2px); }
+        textarea { min-height: 100px; }
+        .submit-btn { background: #000; color: #fff; border: 3px solid #000; padding: 1rem 2rem; cursor: pointer; font-family: inherit; font-weight: 900; box-shadow: 4px 4px 0 #ffeb3b; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+        .submit-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #ffeb3b; }
+        .text-center { text-align: center; }
     </style>
 </head>
 <body>
@@ -364,7 +107,7 @@
     <header>
         <nav class="container">
             <div class="brand-logo">
-                <span>MATHE</span><span class="accent-m">M</span><span>ATRICS</span>
+                <span>MATHE</span><span class="accent-m">M</span><span>ATRICKS</span>
             </div>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#home">Home</a></li>
@@ -379,17 +122,21 @@
     </header>
 
     <!-- Hero Section -->
+        <!-- Hero Section -->
     <section id="home" class="hero binary-pattern">
         <div class="container">
             <p class="subtitle">MatheMatricks Fun(D)</p>
-            <h1>Making Money Shouldn’t Be This Fun.</h1>
+            <h1 class="shared-m-title">
+                Making Money Shouldn't Be This Fun.
+            </h1>
             <div class="description">
-                <p>Let's drop the pretense. You're not here for a mission statement about "changing the world." You're here to turn a large pile of money into a larger pile of money.</p>
-                <p>So here we are. Cold, hard, beautiful math—deployed across a multi-strategy quantitative fund that's built to perform. We're not selling a fairy-tale. We're selling a result.</p>
+                <p>Let's drop the pretense. You're not here for a mission statement about "changing the world". You're here to turn a large pile of money into a larger pile of money.</p>
+                <p>So here we are. Cold, hard, beautiful math–deployed, across a multi-strategy, quantitative fund that's built to perform. We're not selling a fairy-tale. We're selling a result.</p>
             </div>
             <p class="inspired-by">Inspired by Data</p>
         </div>
     </section>
+```
 
     <!-- Our Edge Section -->
     <section id="edge">
@@ -398,14 +145,14 @@
             <div class="edge-cards">
                 <div class="edge-card">
                     <h3>Talent Acquisition</h3>
-                    <p>We attract brilliant quants by replacing soul-crushing bureaucracy with a simple formula: intellectual freedom, a mandate to think differently. Sure, enormous piles of capital helps.</p>
+                    <p>We attract brilliant quants by replacing soul-crushing bureaucracy with a simple formula: intellectual freedom, a mandate to think differently. Sure, an enormous piles of capital helps.</p>
                 </div>
                 <div class="edge-card">
                     <h3>Strategy Diversity</h3>
                     <p>We don't have a single 'golden goose.' That's how funds die. We run a swarm of 15+ automated strategies. Some might zig while others zag. Some might take a nap. The point is, the swarm as a whole is a relentless, honey-badger-of-a-thing that constantly hunts for alpha.</p>
                 </div>
                 <div class="edge-card">
-                    <h3>Our Secret Sauce (aka The Algorithm)</h3>
+                    <h3>Our Secret Sauce</h3>
                     <p>Our allocation algorithm is the sociopathic CEO of the strategy team. It has no ego. It feels no loyalty. If a strategy underperforms, it doesn't get a warning or a bad performance review. It gets its capital cut. Immediately. This brutal, unemotional discipline keeps the whole machine ruthlessly efficient.</p>
                 </div>
             </div>
@@ -532,6 +279,7 @@
     </section>
 
     <!-- Footer -->
+        <!-- Footer -->
     <footer>
         <div class="container">
             <p>&copy; 2025 Mathematrics Fun(D). All rights reserved. | We're a multi-strategy quantitative hedge fund. You get it.</p>
@@ -539,80 +287,70 @@
     </footer>
 
     <script>
+        // Random pattern selection from 30 patterns
+        const patterns = [
+            'pattern-1', 'pattern-2', 'pattern-3', 'pattern-4', 'pattern-5',
+            'pattern-6', 'pattern-7', 'pattern-8', 'pattern-9', 'pattern-10',
+            'pattern-11', 'pattern-12', 'pattern-13', 'pattern-14', 'pattern-15',
+            'pattern-16', 'pattern-17', 'pattern-18', 'pattern-19', 'pattern-20',
+            'pattern-21', 'pattern-22', 'pattern-23', 'pattern-24', 'pattern-25',
+            'pattern-26', 'pattern-27', 'pattern-28', 'pattern-29', 'pattern-30'
+        ];
+        
+        // Select random body pattern
+        const randomBodyPatternIndex = Math.floor(Math.random() * patterns.length);
+        document.body.classList.add(patterns[randomBodyPatternIndex]);
+
         // Mobile menu toggle
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
 
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
+        // Smooth scrolling with dynamic header + margin compensation
+        function scrollToSectionWithOffset(target) {
+            const header = document.querySelector('header');
+            const headerHeight = header ? header.offsetHeight : 0;
+            const rectTop = target.getBoundingClientRect().top + window.pageYOffset;
+            const styles = window.getComputedStyle(target);
+            const marginTop = parseFloat(styles.marginTop) || 0;
+            // Extra nudge so the section's border/title sit clearly below the header
+            const extra = 12;
+            const top = rectTop - headerHeight - marginTop - extra;
+            window.scrollTo({ top, behavior: 'smooth' });
+        }
 
-        // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
+                const hash = this.getAttribute('href');
+                const target = document.querySelector(hash);
                 if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                    navLinks.classList.remove('active');
+                    scrollToSectionWithOffset(target);
+                    // Update URL hash without default jump
+                    history.pushState(null, '', hash);
                 }
             });
         });
 
-        // Form submission handling
-        document.querySelector('.contact-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const queryType = formData.get('query-type');
-
-            // Submit form to Netlify with proper encoding
-            fetch('/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(formData).toString()
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Show auto-reply message
-                    let autoReply = '';
-                    switch(queryType) {
-                        case 'investment':
-                            autoReply = "Fund is currently closed to new capital. You're on our shortlist for when slots open.";
-                            break;
-                        case 'fund-admin':
-                            autoReply = "Thank you for your inquiry. Our team will review and be in touch if there's a potential fit.";
-                            break;
-                        case 'sales':
-                            autoReply = "We're currently full but interested in world-class distribution partners for future expansion.";
-                            break;
-                        case 'strategy':
-                            autoReply = "Your message has been fast-tracked to our quant team. You'll hear from us shortly.";
-                            break;
-                        default:
-                            autoReply = "Thank you for your message. We'll be in touch soon.";
-                    }
-
-                    alert(autoReply);
-                    this.reset();
-                } else {
-                    throw new Error('Form submission failed');
-                }
-            })
-            .catch((error) => {
-                alert('There was an error sending your message. Please try again.');
-                console.error('Error:', error);
-            });
-        });
-
-        // Add offset for fixed header when scrolling to sections
+        // If page loads with a hash or hash changes, adjust position
         window.addEventListener('load', () => {
-            const headerHeight = document.querySelector('header').offsetHeight;
-            document.documentElement.style.setProperty('scroll-padding-top', headerHeight + 'px');
+            if (window.location.hash) {
+                const target = document.querySelector(window.location.hash);
+                if (target) scrollToSectionWithOffset(target);
+            }
+        });
+        window.addEventListener('hashchange', () => {
+            const target = document.querySelector(window.location.hash);
+            if (target) scrollToSectionWithOffset(target);
         });
     </script>
+</body>
+</html>
+```
 </body>
 </html>
