@@ -102,6 +102,164 @@
         .submit-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #ffeb3b; }
         .text-center { text-align: center; }
 
+        /* Animations */
+        @keyframes slideInFromLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInFromRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInFromBottom {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes slideDownFadeIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Apply animations to elements */
+        .hero { animation: fadeIn 0.8s ease-out; }
+        .hero h1 { animation: slideInFromLeft 0.8s ease-out 0.2s both; }
+        .hero .subtitle { animation: slideInFromLeft 0.8s ease-out 0.4s both; }
+        .hero .description { animation: slideInFromLeft 0.8s ease-out 0.6s both; }
+        
+        section { animation: slideInFromBottom 0.6s ease-out both; }
+        section:nth-child(even) { animation: slideInFromRight 0.6s ease-out both; }
+        
+        h2::before, .section-title::before { 
+            display: inline-block;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        .edge-card { animation: slideInFromBottom 0.6s ease-out both; }
+        .edge-card:nth-child(1) { animation-delay: 0.1s; }
+        .edge-card:nth-child(2) { animation-delay: 0.2s; }
+        .edge-card:nth-child(3) { animation-delay: 0.3s; }
+        .edge-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .edge-card::before {
+            animation: slideRight 2s linear infinite;
+        }
+        @keyframes slideRight {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+        
+        .brand-logo { transition: all 0.3s ease; }
+        .brand-logo:hover { transform: rotate(-2deg) scale(1.05); animation: shake 0.5s ease; }
+        
+        .accent-m { 
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .brand-logo:hover .accent-m {
+            animation: pulse 0.6s ease infinite;
+        }
+        
+        .nav-links a {
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: #ffeb3b;
+            transition: left 0.3s ease;
+        }
+        .nav-links a:hover::after {
+            left: 0;
+        }
+        
+        h1::after, .shared-m-title::after {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        section::before {
+            animation: rotate 20s linear infinite;
+        }
+        
+        .highlight {
+            position: relative;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .highlight:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0 #ffeb3b;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            animation: slideInFromRight 0.3s ease;
+        }
+        
+        .submit-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: #ffeb3b;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+        .submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .submit-btn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .contact-form {
+            animation: slideInFromBottom 0.8s ease-out;
+        }
+        
+        /* Scroll-triggered animations */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         /* Mobile Responsive Styles */
         @media (max-width: 768px) {
             body { padding-top: 70px; font-size: 15px; }
@@ -338,7 +496,7 @@
                     <textarea id="message" name="message" required></textarea>
                 </div>
                 <div class="text-center">
-                    <button type="submit" class="submit-btn">Send Message</button>
+                    <button type="submit" class="submit-btn"><span>Send Message</span></button>
                 </div>
             </form>
         </div>
@@ -428,6 +586,59 @@
         window.addEventListener('hashchange', () => {
             const target = document.querySelector(window.location.hash);
             if (target) scrollToSectionWithOffset(target);
+        });
+
+        // Scroll-triggered animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections and cards for scroll animations
+        document.querySelectorAll('section, .edge-card, .contact-form, h3').forEach(el => {
+            el.classList.add('scroll-fade');
+            observer.observe(el);
+        });
+
+        // Add floating animation to decorative elements
+        const decorativeElements = document.querySelectorAll('section::before');
+        
+        // Parallax scroll effect
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.hero, section');
+            
+            parallaxElements.forEach((el, index) => {
+                const speed = 0.5;
+                const yPos = -(scrolled * speed * 0.1);
+                if (el.querySelector('::before')) {
+                    el.style.backgroundPosition = `center ${yPos}px`;
+                }
+            });
+        });
+
+        // Add stagger animation to list items if any
+        document.querySelectorAll('ul li, ol li').forEach((item, index) => {
+            item.style.animation = `slideInFromLeft 0.5s ease-out ${index * 0.1}s both`;
+        });
+
+        // Animate form inputs on interaction
+        const formInputs = document.querySelectorAll('input, textarea, select');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.animation = 'pulse 0.5s ease';
+            });
+            input.addEventListener('blur', function() {
+                this.style.animation = '';
+            });
         });
     </script>
 </body>
