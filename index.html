@@ -542,12 +542,6 @@
                 }
             });
 
-            // Close menu when clicking a menu item
-            navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    navLinks.classList.remove('active');
-                });
-            });
         }
 
         // Smooth scrolling with dynamic header + margin compensation
@@ -569,6 +563,11 @@
                 const hash = this.getAttribute('href');
                 const target = document.querySelector(hash);
                 if (target) {
+                    // Close mobile menu if open
+                    if (navLinks && navLinks.classList.contains('active')) {
+                        navLinks.classList.remove('active');
+                    }
+                    // Scroll to target
                     scrollToSectionWithOffset(target);
                     // Update URL hash without default jump
                     history.pushState(null, '', hash);
