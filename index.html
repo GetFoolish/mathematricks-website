@@ -100,6 +100,63 @@
         .submit-btn { background: #000; color: #fff; border: 3px solid #000; padding: 1rem 2rem; cursor: pointer; font-family: inherit; font-weight: 900; box-shadow: 4px 4px 0 #ffeb3b; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
         .submit-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #ffeb3b; }
         .text-center { text-align: center; }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body { padding-top: 70px; font-size: 15px; }
+            header { padding: 1rem 1.5rem; }
+            nav { flex-direction: column; gap: 1rem; }
+            .brand-logo { font-size: 1.125rem; padding: 0.4rem 0.8rem; }
+            .brand-logo::before { top: -6px; left: -6px; right: -6px; bottom: -6px; }
+            .nav-links { display: none; flex-direction: column; width: 100%; gap: 0; margin-top: 1rem; }
+            .nav-links.active { display: flex; }
+            .nav-links a { margin-left: 0; margin-top: -2px; text-align: center; }
+            .menu-toggle { display: block; width: 100%; }
+            section, .hero { padding: 2.5rem 1.5rem; margin-top: 1.5rem; box-shadow: 6px 6px 0 rgba(0,0,0,1); }
+            section::before { width: 60px; height: 60px; top: 10px; right: 10px; }
+            .hero::before { width: 100px; height: 100px; }
+            h1 { font-size: 2rem; margin-bottom: 1.5rem; }
+            h1::after { height: 6px; bottom: -8px; }
+            .shared-m-title { font-size: 1.75rem; margin-bottom: 1.5rem; }
+            .shared-m-title::after { height: 6px; bottom: -8px; }
+            h2, .section-title { font-size: 1.5rem; margin-bottom: 1.5rem; }
+            h3 { font-size: 1rem; padding: 0.6rem 1rem; margin-top: 1.5rem; }
+            .edge-cards { grid-template-columns: 1fr; gap: 1.5rem; }
+            .edge-card { padding: 1.5rem; box-shadow: 4px 4px 0 #ffeb3b; }
+            .edge-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #ffeb3b; }
+            .contact-form { padding: 1.5rem; box-shadow: 4px 4px 0 #ffeb3b; }
+            .submit-btn { padding: 0.875rem 1.5rem; width: 100%; }
+            footer { padding: 2rem 1.5rem; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding-top: 65px; font-size: 14px; }
+            header { padding: 0.875rem 1rem; border-bottom: 3px solid #000; }
+            .brand-logo { font-size: 1rem; padding: 0.375rem 0.7rem; border: 2px solid #000; }
+            .brand-logo::before { border-width: 2px; top: -5px; left: -5px; right: -5px; bottom: -5px; }
+            .nav-links a { padding: 0.5rem 0.875rem; border-width: 2px; font-size: 0.8125rem; }
+            .menu-toggle { padding: 0.5rem 0.875rem; border-width: 2px; font-size: 0.875rem; }
+            section, .hero { padding: 2rem 1rem; margin-top: 1rem; border-width: 2px; box-shadow: 4px 4px 0 rgba(0,0,0,1); }
+            section::before, .hero::before { display: none; }
+            h1 { font-size: 1.75rem; margin-bottom: 1.25rem; }
+            h1::after { height: 5px; bottom: -6px; width: 70%; }
+            .shared-m-title { font-size: 1.5rem; margin-bottom: 1.25rem; }
+            .shared-m-title::after { height: 5px; bottom: -6px; width: 60%; }
+            h2, .section-title { font-size: 1.375rem; margin-bottom: 1.25rem; border-bottom-width: 3px; }
+            h2::before, .section-title::before { font-size: 1.5rem; }
+            h3 { font-size: 0.9375rem; padding: 0.5rem 0.875rem; border-width: 2px; box-shadow: 3px 3px 0 rgba(0,0,0,0.1); }
+            .subtitle, .inspired-by { font-size: 0.8125rem; letter-spacing: 1px; }
+            .edge-cards { gap: 1.25rem; margin-top: 1.5rem; }
+            .edge-card { padding: 1.25rem; border-width: 2px; box-shadow: 3px 3px 0 #ffeb3b; }
+            .edge-card::before { height: 3px; }
+            .edge-card:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #ffeb3b; }
+            .contact-form { padding: 1.25rem; border-width: 2px; box-shadow: 3px 3px 0 #ffeb3b; }
+            input, select, textarea { padding: 0.625rem; border-width: 2px; font-size: 0.8125rem; }
+            input:focus, select:focus, textarea:focus { box-shadow: 3px 3px 0 #ffeb3b; }
+            .submit-btn { padding: 0.75rem 1.25rem; border-width: 2px; box-shadow: 3px 3px 0 #ffeb3b; font-size: 0.875rem; }
+            .submit-btn:hover { box-shadow: 4px 4px 0 #ffeb3b; }
+            footer { padding: 1.5rem 1rem; font-size: 0.6875rem; }
+        }
     </style>
 </head>
 <body>
@@ -112,7 +169,6 @@
             <ul class="nav-links" id="navLinks">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#edge">Our Edge</a></li>
-                <li><a href="#crew">The Crew</a></li>
                 <li><a href="#fine-print">The Fine Print</a></li>
                 <li><a href="#risk">Risk</a></li>
                 <li><a href="#contact">Get In Touch</a></li>
@@ -157,20 +213,6 @@
                 </div>
             </div>
             <p style="margin-top: 2.5rem; text-align: center; font-style: italic; opacity: 0.8; font-size: 0.9rem;">Result: An equity curve that looks like a piece of art. It should be on a wall in MoMA*</p>
-        </div>
-    </section>
-
-    <!-- The Crew Section -->
-    <section id="crew">
-        <div class="container">
-            <div class="section-grid">
-                <h2 class="section-title">The Crew</h2>
-                <div class="section-content">
-                    <p><strong>Vandan, Gagan, Angelica.</strong></p>
-                    <p>That's the in-house crew. We're small, which means we're not bogged down by committees, corporate retreats, or HR departments. The day-to-day—the investor outreach, the alpha development, the stuff that makes the engine roar—is handled by a global network of professionals who are the best at what they do.</p>
-                    <p><span class="highlight">We don't hire employees; we partner with killers.</span></p>
-                </div>
-            </div>
         </div>
     </section>
 
