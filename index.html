@@ -552,14 +552,42 @@
             const marginTop = parseFloat(styles.marginTop) || 0;
             // Extra nudge so the section's border/title sit clearly below the header
             const extra = 12;
-            const top = rectTop - headerHeight - marginTop - extra;
-            window.scrollTo({ top, behavior: 'smooth' });
+            const targetPosition = rectTop - headerHeight - marginTop - extra;
+            
+            // Custom smooth scroll with easing
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            const duration = 1200; // 1.2 seconds - slower scroll
+            let start = null;
+            
+            function easeInOutCubic(t) {
+                return t < 0.5 
+                    ? 4 * t * t * t 
+                    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+            
+            function animation(currentTime) {
+                if (start === null) start = currentTime;
+                const timeElapsed = currentTime - start;
+                const progress = Math.min(timeElapsed / duration, 1);
+                const ease = easeInOutCubic(progress);
+                
+                window.scrollTo(0, startPosition + distance * ease);
+                
+                if (timeElapsed < duration) {
+                    requestAnimationFrame(animation);
+                }
+            }
+            
+            requestAnimationFrame(animation);
         }
 
         // Handle all anchor clicks for smooth scrolling
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
+                e.stopPropagation();
+                
                 const hash = this.getAttribute('href');
                 const target = document.querySelector(hash);
                 
@@ -572,7 +600,7 @@
                     // Small delay to let menu close animation complete
                     setTimeout(() => {
                         scrollToSectionWithOffset(target);
-                    }, 100);
+                    }, 300);
                     
                     // Update URL hash without default jump
                     history.pushState(null, '', hash);
