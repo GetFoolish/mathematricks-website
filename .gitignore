@@ -80,3 +80,5 @@ local_config.py
 junk/
 # Local Netlify folder
 .netlify
+
+node_modules

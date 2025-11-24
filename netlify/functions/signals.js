@@ -37,7 +37,7 @@ async function getSignalsCollection() {
     const client = await getMongoClient();
     if (!client) return null;
 
-    return client.db('mathematricks_signals').collection('trading_signals');
+    return client.db('mathematricks_trading').collection('trading_signals_raw');
 }
 
 // Validation function
@@ -125,10 +125,16 @@ async function handlePost(event) {
         const isStaging = host.includes('staging');
         const environment = isStaging ? 'staging' : 'production';
 
+        // Normalize signal_legs → signal for MongoDB (signal_ingestion expects 'signal' field)
+        const normalizedData = { ...requestData };
+        if (normalizedData.signal_legs && !normalizedData.signal) {
+            normalizedData.signal = normalizedData.signal_legs;
+        }
+
         // Prepare signal document for MongoDB
         const now = new Date();
         const signalDocument = {
-            ...requestData,
+            ...normalizedData,
             received_at: now,
             signal_processed: false,
             api_endpoint: host,
@@ -140,10 +146,16 @@ async function handlePost(event) {
         console.log('Signal stored in MongoDB:', result.insertedId);
 
         // Extract signal details for response
-        const signal = requestData.signal || {};
-        const ticker = signal.ticker || 'UNKNOWN';
-        const action = signal.action || 'UNKNOWN';
-        const price = signal.price || 'N/A';
+        // Handle both signal_legs (new) and signal (legacy)
+        const signalData = requestData.signal_legs || requestData.signal || {};
+
+        // Handle signal as array (new format) or dict (legacy)
+        const signalLeg = Array.isArray(signalData) ? (signalData[0] || {}) : signalData;
+
+        // Support both instrument (new) and ticker (legacy)
+        const ticker = signalLeg.instrument || signalLeg.ticker || 'UNKNOWN';
+        const action = signalLeg.action || 'UNKNOWN';
+        const price = signalLeg.price || 'N/A';
 
         console.log(`Signal received: ${ticker} - ${action} at ${price}`);
 

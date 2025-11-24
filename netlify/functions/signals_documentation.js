@@ -13,6 +13,16 @@ function createResponse(statusCode, body, headers = {}) {
 
 // Main Netlify Function handler
 exports.handler = async (event, context) => {
+    // Determine API URL based on host
+    const host = event.headers?.host || event.headers?.Host || 'mathematricks.fund';
+    const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+    const isStaging = host.includes('staging');
+
+    // Use staging URL for localhost and staging subdomain
+    const apiUrl = (isLocalhost || isStaging)
+        ? 'https://staging.mathematricks.fund/api/signals'
+        : 'https://mathematricks.fund/api/signals';
+
     const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -38,7 +48,7 @@ exports.handler = async (event, context) => {
             }
 
             .container {
-                max-width: 900px;
+                max-width: 1400px;
                 margin: 0 auto;
                 padding: 4rem 2rem;
                 background: #fff;
@@ -133,32 +143,33 @@ exports.handler = async (event, context) => {
 
             .code-block {
                 background: #0d1117;
-                border: 3px solid #000;
-                padding: 1.5rem;
+                border: 2px solid #000;
+                padding: 1rem;
                 margin: 1rem 0;
                 position: relative;
                 overflow-x: auto;
-                box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+                box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
             }
 
             .code-block pre {
                 margin: 0;
                 color: #e6edf3;
-                font-size: 0.9rem;
+                font-size: 0.75rem;
                 white-space: pre-wrap;
                 font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                line-height: 1.4;
             }
 
             .copy-btn {
                 position: absolute;
-                top: 10px;
-                right: 10px;
+                top: 8px;
+                right: 8px;
                 background: #000;
                 color: #fff;
-                border: 3px solid #000;
-                padding: 0.5rem 1rem;
+                border: 2px solid #000;
+                padding: 0.35rem 0.75rem;
                 cursor: pointer;
-                font-size: 0.8rem;
+                font-size: 0.7rem;
                 transition: all 0.2s;
                 font-weight: 900;
                 box-shadow: 2px 2px 0 #ffeb3b;
@@ -176,16 +187,16 @@ exports.handler = async (event, context) => {
 
             .example-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 2rem;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 0.75rem;
                 margin-top: 1.5rem;
             }
 
             .example-card {
                 background: #fff;
-                border: 3px solid #000;
-                padding: 1.5rem;
-                box-shadow: 6px 6px 0 #ffeb3b;
+                border: 2px solid #000;
+                padding: 0.75rem;
+                box-shadow: 3px 3px 0 #ffeb3b;
                 transition: all 0.3s;
                 position: relative;
                 overflow: hidden;
@@ -202,21 +213,21 @@ exports.handler = async (event, context) => {
             }
 
             .example-card:hover {
-                transform: translate(-4px, -4px);
-                box-shadow: 10px 10px 0 #ffeb3b;
+                transform: translate(-2px, -2px);
+                box-shadow: 5px 5px 0 #ffeb3b;
             }
 
             .example-card h4 {
                 color: #000;
-                margin-bottom: 1rem;
+                margin-bottom: 0.75rem;
                 font-weight: 900;
-                font-size: 1.125rem;
+                font-size: 0.95rem;
             }
 
             .example-card .code-block {
                 margin: 0;
-                padding: 1rem;
-                font-size: 0.8rem;
+                padding: 0.75rem;
+                font-size: 0.7rem;
             }
 
             .url-section {
@@ -296,7 +307,7 @@ exports.handler = async (event, context) => {
 
                 <div class="url-section">
                     <h3>📍 API Endpoint</h3>
-                    <p>https://mathematricks.fund/api/signals</p>
+                    <p>${apiUrl}</p>
                 </div>
 
                 <div id="code-examples">
@@ -306,73 +317,103 @@ exports.handler = async (event, context) => {
 
             <div class="section">
                 <h2>📊 Signal Examples</h2>
-                <p>The <code>signal</code> field can contain any JSON structure for different trading strategies:</p>
+                <p>Real-world signal examples for different asset classes:</p>
 
-                <div class="example-grid">
-                    <div class="example-card">
-                        <h4>📈 Basic Stock Signal</h4>
-                        <div class="code-block">
-                            <pre>{"ticker": "AAPL", "action": "BUY", "price": 150.25}</pre>
-                        </div>
-                    </div>
+                <div class="language-selector" style="margin-bottom: 2rem;">
+                    <button class="lang-btn active" data-asset="all">All</button>
+                    <button class="lang-btn" data-asset="equity">Equity</button>
+                    <button class="lang-btn" data-asset="forex">Forex</button>
+                    <button class="lang-btn" data-asset="crypto">Crypto</button>
+                    <button class="lang-btn" data-asset="commodities">Commodities</button>
+                    <button class="lang-btn" data-asset="options">Options</button>
+                </div>
 
-                    <div class="example-card">
-                        <h4>⚡ Options Signal</h4>
-                        <div class="code-block">
-                            <pre>{"type": "options", "ticker": "AAPL", "strike": 150, "expiry": "2025-01-17", "action": "BUY_CALL"}</pre>
-                        </div>
-                    </div>
-
-                    <div class="example-card">
-                        <h4>🔗 Multi-leg Order</h4>
-                        <div class="code-block">
-                            <pre>[{"ticker": "SPY", "action": "BUY", "qty": 100}, {"ticker": "QQQ", "action": "SELL", "qty": 50}]</pre>
-                        </div>
-                    </div>
-
-                    <div class="example-card">
-                        <h4>🛑 Stop Loss</h4>
-                        <div class="code-block">
-                            <pre>{"trigger": "if AAPL < 145", "action": "SELL_ALL", "stop_loss": true}</pre>
-                        </div>
-                    </div>
+                <div id="signal-examples">
+                    <!-- Signal examples will be populated by JavaScript -->
                 </div>
             </div>
 
             <div class="section">
-                <h2>🔑 Required Fields</h2>
-                <p>Every signal must include these required fields:</p>
+                <h2>🔑 Signal Structure</h2>
+
+                <h3 style="font-size: 1.25rem; font-weight: 900; margin-top: 1.5rem; margin-bottom: 1rem;">Required Top-Level Fields</h3>
                 <ul style="margin-left: 2rem; margin-top: 1rem;">
                     <li><strong>strategy_name:</strong> Name of your trading strategy</li>
                     <li><strong>signal_sent_EPOCH:</strong> Unix timestamp when signal was sent</li>
                     <li><strong>signalID:</strong> Unique identifier for this signal</li>
                     <li><strong>passphrase:</strong> Your API authentication passphrase</li>
-                    <li><strong>signal:</strong> Your trading signal data (any JSON structure)</li>
+                    <li><strong>signal_legs:</strong> Array of trade legs (see below)</li>
                 </ul>
+
+                <h3 style="font-size: 1.25rem; font-weight: 900; margin-top: 1.5rem; margin-bottom: 1rem;">Optional Top-Level Fields</h3>
+                <ul style="margin-left: 2rem; margin-top: 1rem;">
+                    <li><strong>signal_type:</strong> Type of signal - "ENTRY", "EXIT", or "CANCEL"</li>
+                    <li><strong>entry_signal_id:</strong> Reference to previous ENTRY signal (for EXIT signals)</li>
+                    <li><strong>entry_name:</strong> Named identifier for tracking (e.g., "$ENTRY_1")</li>
+                    <li><strong>account_equity:</strong> Account equity at signal generation time</li>
+                </ul>
+
+                <h3 style="font-size: 1.25rem; font-weight: 900; margin-top: 1.5rem; margin-bottom: 1rem;">Signal Leg Fields</h3>
+                <p>Each object in the <code>signal_legs</code> array must contain:</p>
+                <ul style="margin-left: 2rem; margin-top: 1rem;">
+                    <li><strong>instrument:</strong> Ticker/symbol (e.g., "AAPL", "AUDCAD", "BTC")</li>
+                    <li><strong>instrument_type:</strong> Asset type - "STOCK", "FOREX", "CRYPTO", "FUTURE", "OPTION"</li>
+                    <li><strong>action:</strong> Trade action - "BUY" or "SELL"</li>
+                    <li><strong>direction:</strong> Position direction - "LONG" or "SHORT"</li>
+                    <li><strong>quantity:</strong> Number of units to trade</li>
+                    <li><strong>order_type:</strong> Order type - "MARKET", "LIMIT", "STOP", etc.</li>
+                    <li><strong>price:</strong> Price for the order</li>
+                    <li><strong>environment:</strong> "staging" or "production"</li>
+                </ul>
+
+                <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.8;">
+                    <strong>Note:</strong> Multi-leg signals (like pairs trades or spreads) can include multiple objects in the <code>signal_legs</code> array.
+                </p>
             </div>
         </div>
 
         <script>
+            const apiUrl = "${apiUrl}";
             const codeExamples = {
-                curl: \`curl -X POST https://mathematricks.fund/api/signals -H "Content-Type: application/json" -d '{
+                curl: \`curl -X POST \${apiUrl} -H "Content-Type: application/json" -d '{
     "strategy_name": "My Strategy",
     "signal_sent_EPOCH": 1696270000,
     "signalID": "signal_001",
     "passphrase": "your_passphrase_here",
-    "signal": {"ticker": "AAPL", "action": "BUY", "price": 150.25}
+    "signal_type": "ENTRY",
+    "signal_legs": [{
+        "instrument": "AAPL",
+        "instrument_type": "STOCK",
+        "action": "BUY",
+        "direction": "LONG",
+        "quantity": 10,
+        "order_type": "MARKET",
+        "price": 150.25,
+        "environment": "staging"
+    }]
   }'\`,
 
                 python: \`import requests
 import time
 
 response = requests.post(
-    "https://mathematricks.fund/api/signals",
+    "\${apiUrl}",
     json={
         "strategy_name": "My Strategy",
         "signal_sent_EPOCH": int(time.time()),
         "signalID": "signal_001",
         "passphrase": "your_passphrase_here",
-        "signal": {"ticker": "AAPL", "action": "BUY", "price": 150.25}
+        "signal_type": "ENTRY",
+        "signal_legs": [{
+            "instrument": "AAPL",
+            "instrument_type": "STOCK",
+            "action": "BUY",
+            "direction": "LONG",
+            "quantity": 10,
+            "order_type": "MARKET",
+            "price": 150.25,
+            "environment": "staging"
+        }]
     }
 )
 
@@ -381,7 +422,7 @@ if response.status_code == 200:
 else:
     print(f"❌ Error: {response.text}")\`,
 
-                javascript: \`const response = await fetch("https://mathematricks.fund/api/signals", {
+                javascript: \`const response = await fetch("\${apiUrl}", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
@@ -389,7 +430,17 @@ else:
         signal_sent_EPOCH: Math.floor(Date.now() / 1000),
         signalID: "signal_001",
         passphrase: "your_passphrase_here",
-        signal: {ticker: "AAPL", action: "BUY", price: 150.25}
+        signal_type: "ENTRY",
+        signal_legs: [{
+            instrument: "AAPL",
+            instrument_type: "STOCK",
+            action: "BUY",
+            direction: "LONG",
+            quantity: 10,
+            order_type: "MARKET",
+            price: 150.25,
+            environment: "staging"
+        }]
     })
 });
 
@@ -408,12 +459,22 @@ std::string json = R"({
     "signal_sent_EPOCH": )" + std::to_string(std::time(nullptr)) + R"(,
     "signalID": "signal_001",
     "passphrase": "your_passphrase_here",
-    "signal": {"ticker": "AAPL", "action": "BUY", "price": 150.25}
+    "signal_type": "ENTRY",
+    "signal_legs": [{
+        "instrument": "AAPL",
+        "instrument_type": "STOCK",
+        "action": "BUY",
+        "direction": "LONG",
+        "quantity": 10,
+        "order_type": "MARKET",
+        "price": 150.25,
+        "environment": "staging"
+    }]
 })";
 
 CURL *curl = curl_easy_init();
 if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "https://mathematricks.fund/api/signals");
+    curl_easy_setopt(curl, CURLOPT_URL, "\${apiUrl}");
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
 
     struct curl_slist *headers = NULL;
@@ -453,17 +514,231 @@ if(curl) {
                 });
             }
 
-            // Language selector functionality
-            document.querySelectorAll('.lang-btn').forEach(btn => {
+            // Signal examples by asset class
+            const signalExamples = {
+                equity_simple: {
+                    asset: 'equity',
+                    title: '📈 Equity - Simple Entry',
+                    code: \`{
+    "strategy_name": "US_Equity_Long",
+    "signal_sent_EPOCH": 1696270000,
+    "signalID": "AAPL_ENTRY_001",
+    "passphrase": "your_passphrase",
+    "signal_type": "ENTRY",
+    "signal_legs": [{
+        "instrument": "AAPL",
+        "instrument_type": "STOCK",
+        "action": "BUY",
+        "direction": "LONG",
+        "quantity": 10,
+        "order_type": "MARKET",
+        "price": 150.25,
+        "environment": "staging"
+    }]
+}\`
+                },
+                equity_pairs: {
+                    asset: 'equity',
+                    title: '🔗 Equity - Pairs Trade (Multi-leg)',
+                    code: \`{
+    "strategy_name": "Tech_Pairs",
+    "signal_sent_EPOCH": 1696270000,
+    "signalID": "PAIRS_001",
+    "passphrase": "your_passphrase",
+    "signal_type": "ENTRY",
+    "signal_legs": [
+        {
+            "instrument": "AAPL",
+            "instrument_type": "STOCK",
+            "action": "BUY",
+            "direction": "LONG",
+            "quantity": 10,
+            "order_type": "MARKET",
+            "price": 150.00,
+            "environment": "staging"
+        },
+        {
+            "instrument": "NVDA",
+            "instrument_type": "STOCK",
+            "action": "SELL",
+            "direction": "SHORT",
+            "quantity": 10,
+            "order_type": "MARKET",
+            "price": 500.00,
+            "environment": "staging"
+        }
+    ]
+}\`
+                },
+                forex_simple: {
+                    asset: 'forex',
+                    title: '💱 Forex - Simple Entry',
+                    code: \`{
+    "strategy_name": "Forex_Momentum",
+    "signal_sent_EPOCH": 1696270000,
+    "signalID": "AUDCAD_ENTRY_001",
+    "passphrase": "your_passphrase",
+    "signal_type": "ENTRY",
+    "signal_legs": [{
+        "instrument": "AUDCAD",
+        "instrument_type": "FOREX",
+        "action": "BUY",
+        "direction": "LONG",
+        "quantity": 100000,
+        "order_type": "MARKET",
+        "price": 0.9123,
+        "environment": "staging"
+    }]
+}\`
+                },
+                crypto_simple: {
+                    asset: 'crypto',
+                    title: '₿ Crypto - Bitcoin Entry',
+                    code: \`{
+    "strategy_name": "BTC_Trend",
+    "signal_sent_EPOCH": 1696270000,
+    "signalID": "BTC_ENTRY_001",
+    "passphrase": "your_passphrase",
+    "signal_type": "ENTRY",
+    "signal_legs": [{
+        "instrument": "BTC",
+        "instrument_type": "CRYPTO",
+        "action": "BUY",
+        "direction": "LONG",
+        "quantity": 0.5,
+        "order_type": "MARKET",
+        "price": 95000.00,
+        "environment": "staging"
+    }]
+}\`
+                },
+                commodities_simple: {
+                    asset: 'commodities',
+                    title: '🥇 Commodities - Gold Futures',
+                    code: \`{
+    "strategy_name": "Gold_Momentum",
+    "signal_sent_EPOCH": 1696270000,
+    "signalID": "GC_ENTRY_001",
+    "passphrase": "your_passphrase",
+    "signal_type": "ENTRY",
+    "signal_legs": [{
+        "instrument": "GC",
+        "instrument_type": "FUTURE",
+        "action": "BUY",
+        "direction": "LONG",
+        "quantity": 5,
+        "order_type": "MARKET",
+        "price": 4029.00,
+        "expiry": "20251229",
+        "exchange": "COMEX",
+        "environment": "staging"
+    }]
+}\`
+                }
+            };
+
+            let showAllExamples = false;
+
+            function showSignalExamples(assetClass, forceShowAll = false) {
+                const container = document.getElementById('signal-examples');
+
+                if (assetClass === 'options') {
+                    container.innerHTML = \`
+                        <div style="text-align: center; padding: 3rem 2rem; background: #fff; border: 3px solid #000; box-shadow: 4px 4px 0 rgba(0,0,0,0.1);">
+                            <p style="font-size: 1.1rem; opacity: 0.7;">
+                                Sample signals for this asset class have not yet been created. Come back again in a few days.
+                            </p>
+                        </div>
+                    \`;
+                    return;
+                }
+
+                const filtered = Object.values(signalExamples).filter(ex =>
+                    assetClass === 'all' || ex.asset === assetClass
+                );
+
+                if (filtered.length === 0) {
+                    container.innerHTML = \`
+                        <div style="text-align: center; padding: 3rem 2rem; background: #fff; border: 3px solid #000; box-shadow: 4px 4px 0 rgba(0,0,0,0.1);">
+                            <p style="font-size: 1.1rem; opacity: 0.7;">
+                                Sample signals for this asset class have not yet been created. Come back again in a few days.
+                            </p>
+                        </div>
+                    \`;
+                    return;
+                }
+
+                // Limit to 4 examples initially (2 rows on desktop)
+                const maxInitialExamples = 4;
+                const displayExamples = (showAllExamples || forceShowAll) ? filtered : filtered.slice(0, maxInitialExamples);
+                const hasMore = filtered.length > maxInitialExamples;
+
+                const examplesHTML = displayExamples.map(ex => \`
+                    <div class="example-card">
+                        <h4>\${ex.title}</h4>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyExampleCode(this)">Copy</button>
+                            <pre><code>\${ex.code}</code></pre>
+                        </div>
+                    </div>
+                \`).join('');
+
+                const loadMoreButton = (hasMore && !showAllExamples && !forceShowAll) ? \`
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button onclick="loadMoreExamples()" style="background: #000; color: #fff; border: 3px solid #000; padding: 1rem 2rem; cursor: pointer; font-size: 1rem; font-weight: 900; box-shadow: 4px 4px 0 #ffeb3b; transition: all 0.2s; font-family: inherit;" onmouseover="this.style.transform='translate(-2px, -2px)'; this.style.boxShadow='6px 6px 0 #ffeb3b'" onmouseout="this.style.transform=''; this.style.boxShadow='4px 4px 0 #ffeb3b'">
+                            Load More Examples
+                        </button>
+                    </div>
+                \` : '';
+
+                container.innerHTML = \`
+                    <div class="example-grid">
+                        \${examplesHTML}
+                    </div>
+                    \${loadMoreButton}
+                \`;
+            }
+
+            function loadMoreExamples() {
+                showAllExamples = true;
+                const activeAsset = document.querySelector('[data-asset].active').dataset.asset;
+                showSignalExamples(activeAsset);
+            }
+
+            function copyExampleCode(button) {
+                const code = button.nextElementSibling.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    button.textContent = 'Copied!';
+                    button.classList.add('copied');
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                        button.classList.remove('copied');
+                    }, 2000);
+                });
+            }
+
+            // Language selector functionality (Quick Start)
+            document.querySelectorAll('[data-lang]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('[data-lang]').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     showCode(btn.dataset.lang);
                 });
             });
 
-            // Initialize with curl example
+            // Asset class selector functionality (Signal Examples)
+            document.querySelectorAll('[data-asset]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-asset]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    showAllExamples = false; // Reset pagination when switching asset classes
+                    showSignalExamples(btn.dataset.asset);
+                });
+            });
+
+            // Initialize with curl example and all asset classes
             showCode('curl');
+            showSignalExamples('all');
         </script>
     </body>
     </html>
