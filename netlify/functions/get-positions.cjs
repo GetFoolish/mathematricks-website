@@ -117,8 +117,16 @@ exports.handler = async (event, context) => {
       return authError;
     }
 
-    // Get strategy_id from query params (set by Netlify redirect)
-    const strategyId = params.strategy_id;
+    // Get strategy_id from query params OR parse from path
+    let strategyId = params.strategy_id;
+    if (!strategyId) {
+      // Extract from path: /api/v1/signal-senders/{strategy_id}/positions
+      const pathMatch = event.path.match(/\/api\/v1\/signal-senders\/([^/]+)\/positions/);
+      if (pathMatch) {
+        strategyId = pathMatch[1];
+      }
+    }
+
     if (!strategyId) {
       return errorResponse(400, 'strategy_id is required');
     }

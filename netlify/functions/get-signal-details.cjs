@@ -85,10 +85,6 @@ exports.handler = async (event, context) => {
     const headers = event.headers || {};
     const params = event.queryStringParameters || {};
 
-    // Debug logging
-    console.log('Event path:', event.path);
-    console.log('Query parameters:', JSON.stringify(params));
-
     // Get MongoDB client
     const client = await getMongoClient();
     const db = client.db('mathematricks_trading');
@@ -99,9 +95,19 @@ exports.handler = async (event, context) => {
       return authError;
     }
 
-    // Get parameters from query (set by Netlify redirect)
-    const strategyId = params.strategy_id;
-    const signalId = params.signal_id;
+    // Parse parameters from path: /api/v1/signal-senders/{strategy_id}/signals/{signal_id}
+    // OR from query params if using direct function URL
+    let strategyId = params.strategy_id;
+    let signalId = params.signal_id;
+
+    if (!strategyId || !signalId) {
+      // Extract from path if query params are empty
+      const pathMatch = event.path.match(/\/api\/v1\/signal-senders\/([^/]+)\/signals\/([^/]+)/);
+      if (pathMatch) {
+        strategyId = pathMatch[1];
+        signalId = pathMatch[2];
+      }
+    }
 
     if (!strategyId) {
       return errorResponse(400, 'strategy_id is required');
