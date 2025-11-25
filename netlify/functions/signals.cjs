@@ -72,11 +72,26 @@ function handleOptions() {
     return createResponse(200, { message: 'CORS preflight' });
 }
 
-function handleGet() {
+function handleGet(event) {
+    // Determine environment from host
+    const host = event.headers?.host || event.headers?.Host || 'unknown';
+    const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+    const isStaging = host.includes('staging');
+
+    let environment;
+    if (isLocalhost) {
+        environment = 'local';
+    } else if (isStaging) {
+        environment = 'staging';
+    } else {
+        environment = 'main';
+    }
+
     const responseData = {
         service: 'Mathematricks Fun(d) Signal Receiver',
         status: 'active',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        environment: environment
     };
 
     console.log('API status check - service active');
@@ -198,7 +213,7 @@ exports.handler = async (event, context) => {
     if (httpMethod === 'OPTIONS') {
         return handleOptions();
     } else if (httpMethod === 'GET') {
-        return handleGet();
+        return handleGet(event);
     } else if (httpMethod === 'POST') {
         return await handlePost(event);
     } else {

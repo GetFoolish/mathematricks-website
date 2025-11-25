@@ -20,8 +20,8 @@ exports.handler = async (event, context) => {
 
     // Use staging URL for localhost and staging subdomain
     const apiUrl = (isLocalhost || isStaging)
-        ? 'https://staging.mathematricks.fund/api/signals'
-        : 'https://mathematricks.fund/api/signals';
+        ? 'https://staging.mathematricks.fund/api/v1/signals'
+        : 'https://mathematricks.fund/api/v1/signals';
 
     const html = `
     <!DOCTYPE html>
