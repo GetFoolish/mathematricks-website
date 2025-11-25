@@ -342,6 +342,7 @@ exports.handler = async (event, context) => {
                     <li><strong>signal_sent_EPOCH:</strong> Unix timestamp when signal was sent</li>
                     <li><strong>signalID:</strong> Unique identifier for this signal</li>
                     <li><strong>passphrase:</strong> Your API authentication passphrase</li>
+                    <li><strong>account_equity:</strong> Account equity at signal generation time. For position sizes in percentage terms: if your position size is 0.85, send 1; if your position size is 85%, send 100.</li>
                     <li><strong>signal_legs:</strong> Array of trade legs (see below)</li>
                 </ul>
 
@@ -350,7 +351,6 @@ exports.handler = async (event, context) => {
                     <li><strong>signal_type:</strong> Type of signal - "ENTRY", "EXIT", or "CANCEL"</li>
                     <li><strong>entry_signal_id:</strong> Reference to previous ENTRY signal (for EXIT signals)</li>
                     <li><strong>entry_name:</strong> Named identifier for tracking (e.g., "$ENTRY_1")</li>
-                    <li><strong>account_equity:</strong> Account equity at signal generation time</li>
                 </ul>
 
                 <h3 style="font-size: 1.25rem; font-weight: 900; margin-top: 1.5rem; margin-bottom: 1rem;">Signal Leg Fields</h3>
@@ -380,6 +380,7 @@ exports.handler = async (event, context) => {
     "signal_sent_EPOCH": 1696270000,
     "signalID": "signal_001",
     "passphrase": "your_passphrase_here",
+    "account_equity": 100000,
     "signal_type": "ENTRY",
     "signal_legs": [{
         "instrument": "AAPL",
@@ -403,6 +404,7 @@ response = requests.post(
         "signal_sent_EPOCH": int(time.time()),
         "signalID": "signal_001",
         "passphrase": "your_passphrase_here",
+        "account_equity": 100000,
         "signal_type": "ENTRY",
         "signal_legs": [{
             "instrument": "AAPL",
@@ -430,6 +432,7 @@ else:
         signal_sent_EPOCH: Math.floor(Date.now() / 1000),
         signalID: "signal_001",
         passphrase: "your_passphrase_here",
+        account_equity: 100000,
         signal_type: "ENTRY",
         signal_legs: [{
             instrument: "AAPL",
@@ -459,6 +462,7 @@ std::string json = R"({
     "signal_sent_EPOCH": )" + std::to_string(std::time(nullptr)) + R"(,
     "signalID": "signal_001",
     "passphrase": "your_passphrase_here",
+    "account_equity": 100000,
     "signal_type": "ENTRY",
     "signal_legs": [{
         "instrument": "AAPL",
@@ -524,6 +528,7 @@ if(curl) {
     "signal_sent_EPOCH": 1696270000,
     "signalID": "AAPL_ENTRY_001",
     "passphrase": "your_passphrase",
+    "account_equity": 100000,
     "signal_type": "ENTRY",
     "signal_legs": [{
         "instrument": "AAPL",
@@ -545,6 +550,7 @@ if(curl) {
     "signal_sent_EPOCH": 1696270000,
     "signalID": "PAIRS_001",
     "passphrase": "your_passphrase",
+    "account_equity": 250000,
     "signal_type": "ENTRY",
     "signal_legs": [
         {
@@ -578,6 +584,7 @@ if(curl) {
     "signal_sent_EPOCH": 1696270000,
     "signalID": "AUDCAD_ENTRY_001",
     "passphrase": "your_passphrase",
+    "account_equity": 50000,
     "signal_type": "ENTRY",
     "signal_legs": [{
         "instrument": "AUDCAD",
@@ -599,6 +606,7 @@ if(curl) {
     "signal_sent_EPOCH": 1696270000,
     "signalID": "BTC_ENTRY_001",
     "passphrase": "your_passphrase",
+    "account_equity": 75000,
     "signal_type": "ENTRY",
     "signal_legs": [{
         "instrument": "BTC",
@@ -620,6 +628,7 @@ if(curl) {
     "signal_sent_EPOCH": 1696270000,
     "signalID": "GC_ENTRY_001",
     "passphrase": "your_passphrase",
+    "account_equity": 150000,
     "signal_type": "ENTRY",
     "signal_legs": [{
         "instrument": "GC",
