@@ -1,11 +1,46 @@
 [build]
-  # No build command needed for static HTML
-  command = "echo 'No build needed for static site'"
-  publish = "."
+  command = "npm run build"
+  publish = "dist"
   functions = "netlify/functions"
 
+# Strategy Developer API - Signal Details (most specific, must come first)
+[[redirects]]
+  from = "/api/v1/signal-senders/:strategy_id/signals/:signal_id"
+  to = "/.netlify/functions/get-signal-details?strategy_id=:strategy_id&signal_id=:signal_id"
+  status = 200
+  force = true
 
-# API Function routes (must come BEFORE catch-all)
+# Strategy Developer API - Signals List
+[[redirects]]
+  from = "/api/v1/signal-senders/:strategy_id/signals"
+  to = "/.netlify/functions/get-signals?strategy_id=:strategy_id"
+  status = 200
+  force = true
+
+# Strategy Developer API - Positions
+[[redirects]]
+  from = "/api/v1/signal-senders/:strategy_id/positions"
+  to = "/.netlify/functions/get-positions?strategy_id=:strategy_id"
+  status = 200
+  force = true
+
+# Signal Ingestion API (v1)
+[[redirects]]
+  from = "/api/v1/signals"
+  to = "/.netlify/functions/signals"
+  status = 200
+
+[[redirects]]
+  from = "/api/v1/signals/documentation"
+  to = "/.netlify/functions/signals_documentation"
+  status = 200
+
+[[redirects]]
+  from = "/api/v1/signals_documentation"
+  to = "/api/v1/signals/documentation"
+  status = 301
+
+# Legacy redirects (backward compatibility - can remove later)
 [[redirects]]
   from = "/api/signals"
   to = "/.netlify/functions/signals"
@@ -16,7 +51,13 @@
   to = "/.netlify/functions/signals_documentation"
   status = 200
 
-# Website catch-all redirect (AFTER API routes)
+# Form handling for contact form
+[[redirects]]
+  from = "/contact"
+  to = "/.netlify/functions/contact-form"
+  status = 200
+
+# SPA catch-all redirect (AFTER all API routes)
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -31,12 +72,6 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https:;"
-
-# Form handling for contact form
-[[redirects]]
-  from = "/contact"
-  to = "/.netlify/functions/contact-form"
-  status = 200
 
 # Cache static assets
 [[headers]]
@@ -59,29 +94,26 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000"
 
-# Custom domain configuration (for when you add mathematricks.capital)
+# Custom domain configuration
 [[redirects]]
   from = "https://mathematricks-website.netlify.app/*"
   to = "https://mathematricks.capital/:splat"
   status = 301
   force = true
 
-# Environment-specific redirects
+# Environment-specific build commands
 [context.production]
-  command = "echo 'Production build'"
+  command = "npm run build"
 
 [context.deploy-preview]
-  command = "echo 'Deploy preview'"
+  command = "npm run build"
 
 [context.branch-deploy]
-  command = "echo 'Branch deploy'"
+  command = "npm run build"
 
-# Enable staging branch deploys
 [context.staging]
-  command = "echo 'Staging build'"
+  command = "npm run build"
 
 # Configure branch deploys
 [build.processing]
   skip_processing = false
-
-# Updated: Environment variables configured
