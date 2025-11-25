@@ -85,6 +85,10 @@ exports.handler = async (event, context) => {
     const headers = event.headers || {};
     const params = event.queryStringParameters || {};
 
+    // Debug logging
+    console.log('Event path:', event.path);
+    console.log('Query parameters:', JSON.stringify(params));
+
     // Get MongoDB client
     const client = await getMongoClient();
     const db = client.db('mathematricks_trading');
