@@ -1,6 +1,6 @@
 # Mathematricks Capital - Free Deployment Guide
 
-Deploy your hedge fund website and TradingView webhook completely free using Netlify + Vercel.
+Deploy your hedge fund website and TradingView webhook completely free using Netlify + Vercel..
 
 ## 🚀 Quick Deployment
 
