@@ -15,17 +15,24 @@ async function getMongoClient() {
     }
 
     try {
-        const client = new MongoClient(connectionString, {
+        // Detect if local MongoDB (no TLS) or Atlas (TLS required)
+        const isLocal = connectionString.includes('localhost') || 
+                        connectionString.includes('127.0.0.1') || 
+                        connectionString.includes('mongodb://mongodb:');
+        
+        const clientOptions = isLocal ? {} : {
             tls: true,
             tlsAllowInvalidCertificates: true
-        });
+        };
+
+        const client = new MongoClient(connectionString, clientOptions);
         await client.connect();
 
         // Test connection
         await client.db('admin').command({ ping: 1 });
 
         cachedClient = client;
-        console.log('✅ Connected to MongoDB Atlas');
+        console.log(`✅ Connected to MongoDB (${isLocal ? 'local' : 'Atlas'})`);
         return client;
     } catch (error) {
         console.error('MongoDB connection failed:', error);
@@ -38,6 +45,56 @@ async function getSignalsCollection() {
     if (!client) return null;
 
     return client.db('mathematricks_trading').collection('trading_signals_raw');
+}
+
+async function getSignalStoreCollection() {
+    const client = await getMongoClient();
+    if (!client) return null;
+
+    return client.db('mathematricks_trading').collection('signal_store');
+}
+
+// Poll signal_store for processed signal (wait for signal-ingestion to create it)
+async function waitForSignalProcessing(signalID, maxWaitMs = 5000) {
+    const signalStoreCollection = await getSignalStoreCollection();
+    if (!signalStoreCollection) {
+        return { status: 'error', reason: 'Could not connect to signal_store collection' };
+    }
+
+    const startTime = Date.now();
+    const pollInterval = 200; // Poll every 200ms
+
+    while (Date.now() - startTime < maxWaitMs) {
+        // Check if signal_store document exists
+        const signalStoreDoc = await signalStoreCollection.findOne(
+            { signal_id: signalID },
+            { projection: { _id: 1, signal_id: 1, 'legs.decision.status': 1 } }
+        );
+
+        if (signalStoreDoc) {
+            // Signal was processed - check if approved or rejected
+            const firstLeg = signalStoreDoc.legs && signalStoreDoc.legs[0];
+            const decisionStatus = firstLeg?.decision?.status;
+
+            return {
+                status: decisionStatus === 'REJECTED' ? 'rejected' : 'approved',
+                signal_store_id: signalStoreDoc._id.toString(),
+                signal_id: signalStoreDoc.signal_id,
+                decision_status: decisionStatus,
+                reason: firstLeg?.decision?.reason || 'Signal processed'
+            };
+        }
+
+        // Wait before polling again
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+
+    // Timeout - signal not processed
+    return {
+        status: 'timeout',
+        signal_id: signalID,
+        reason: `Signal not processed by signal-ingestion within ${maxWaitMs}ms`
+    };
 }
 
 // Validation function
@@ -137,7 +194,8 @@ async function handlePost(event) {
 
         // Determine which endpoint was used
         const host = event.headers?.host || event.headers?.Host || 'unknown';
-        const isStaging = host.includes('staging');
+        const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+        const isStaging = host.includes('staging') || isLocalhost;
         const environment = isStaging ? 'staging' : 'production';
 
         // Normalize signal_legs → signal for MongoDB (signal_ingestion expects 'signal' field)
@@ -174,18 +232,17 @@ async function handlePost(event) {
 
         console.log(`Signal received: ${ticker} - ${action} at ${price}`);
 
-        // TODO: INSERT YOUR BROKER API/TRADING LOGIC HERE
-        // Example:
-        // if (action === "BUY") {
-        //     // Execute buy order through broker API
-        // } else if (action === "SELL") {
-        //     // Execute sell order through broker API
-        // }
+        // Wait for signal-ingestion to process the signal and create signal_store document
+        // Support both signalID (test runner) and signal_id (standard)
+        const signalID = requestData.signalID || requestData.signal_id;
+        console.log(`Waiting for signal-ingestion to process signal_id: ${signalID}...`);
+        const processingResult = await waitForSignalProcessing(signalID, 5000);
 
-        // Return success response
+        console.log(`Signal processing result:`, processingResult);
+
+        // Return response based on processing result
         const responseData = {
-            status: 'success',
-            message: 'Signal received and processed',
+            ...processingResult,
             timestamp: now.toISOString(),
             signal_summary: {
                 ticker,
@@ -194,7 +251,15 @@ async function handlePost(event) {
             }
         };
 
-        console.log(`Signal processed successfully: ${ticker} - ${action} at ${price}`);
+        // Log appropriate message
+        if (processingResult.status === 'approved') {
+            console.log(`Signal approved: ${ticker} - ${action} at ${price} (signal_store_id: ${processingResult.signal_store_id})`);
+        } else if (processingResult.status === 'rejected') {
+            console.log(`Signal rejected: ${ticker} - ${action} - ${processingResult.reason}`);
+        } else if (processingResult.status === 'timeout') {
+            console.log(`Signal timeout: ${ticker} - ${action} - ${processingResult.reason}`);
+        }
+
         return createResponse(200, responseData);
 
     } catch (error) {
