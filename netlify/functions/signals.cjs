@@ -214,6 +214,12 @@ async function handlePost(event) {
             environment: environment
         };
 
+        // Log what we're storing
+        console.log('Signal document fields:', Object.keys(signalDocument).join(', '));
+        console.log('environment:', signalDocument.environment);
+        console.log('data_source:', signalDocument.data_source);
+        console.log('mode:', signalDocument.mode);
+
         // Store in MongoDB
         const result = await collection.insertOne(signalDocument);
         console.log('Signal stored in MongoDB:', result.insertedId);
