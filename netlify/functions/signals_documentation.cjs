@@ -306,12 +306,70 @@ exports.handler = async (event, context) => {
                 </div>
 
                 <div class="url-section">
-                    <h3>📍 API Endpoint</h3>
+                    <h3>📍 API Endpoint (POST)</h3>
                     <p>${apiUrl}</p>
                 </div>
 
                 <div id="code-examples">
                     <!-- Code examples will be populated by JavaScript -->
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: #007bff;">Response Structure</h3>
+                    <pre style="background: white; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.9rem;"><code>{
+  "status": "success",
+  "message": "Signal received and queued for processing",
+  "signal_id": "signal_001",
+  "timestamp": 1696270000,
+  "data": {
+    "strategy_name": "My Strategy",
+    "signal_type": "ENTRY",
+    "instruments": ["AAPL"],
+    "queued_at": "2026-02-12T17:53:20.000Z"
+  }
+}</code></pre>
+                    <p style="margin-bottom: 0; font-size: 0.9rem; opacity: 0.8;">
+                        <strong>Note:</strong> The signal is queued for Cerebro processing. Use the Signal Status endpoint to track execution progress.
+                    </p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📊 Query Signal Status</h2>
+                <p>Check the status of any signal by its ID. This returns both a summary and the full signal document.</p>
+
+                <div class="language-selector">
+                    <button class="lang-btn active" data-lang="curl-status">curl</button>
+                    <button class="lang-btn" data-lang="python-status">Python</button>
+                    <button class="lang-btn" data-lang="javascript-status">JavaScript</button>
+                    <button class="lang-btn" data-lang="cpp-status">C++</button>
+                </div>
+
+                <div class="url-section">
+                    <h3>📍 API Endpoint (GET)</h3>
+                    <p>${apiUrl.replace('/signals', '/signal_status')}?signal_id=YOUR_SIGNAL_ID</p>
+                </div>
+
+                <div id="status-code-examples">
+                    <!-- Status code examples will be populated by JavaScript -->
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: #28a745;">Response Structure</h3>
+                    <pre style="background: white; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.9rem;"><code>{
+  "summary": {
+    "signal_id": "sig_1770912665_6898_912647_1770912665",
+    "strategy_id": "mock-strategy-crypto",
+    "cerebro_status": "APPROVED",
+    "execution_status": "FILLED",
+    "total_quantity_filled": 0.10044583,
+    "weighted_avg_price": 66600.26,
+    "position_status": "CLOSED"
+  },
+  "full_document": {
+    /* Complete signal document with all cerebro decisions, execution details, etc. */
+  }
+}</code></pre>
                 </div>
             </div>
 
@@ -387,9 +445,9 @@ exports.handler = async (event, context) => {
         "instrument_type": "STOCK",
         "action": "BUY",
         "direction": "LONG",
-        "quantity": 10,
+        "quantity": 50,
         "order_type": "MARKET",
-        "price": 150.25,
+        "price": 245.0,
         "environment": "staging"
     }]
   }'\`,
@@ -411,9 +469,9 @@ response = requests.post(
             "instrument_type": "STOCK",
             "action": "BUY",
             "direction": "LONG",
-            "quantity": 10,
+            "quantity": 50,
             "order_type": "MARKET",
-            "price": 150.25,
+            "price": 245.0,
             "environment": "staging"
         }]
     }
@@ -439,9 +497,9 @@ else:
             instrument_type: "STOCK",
             action: "BUY",
             direction: "LONG",
-            quantity: 10,
+            quantity: 50,
             order_type: "MARKET",
-            price: 150.25,
+            price: 245.0,
             environment: "staging"
         }]
     })
@@ -469,9 +527,9 @@ std::string json = R"({
         "instrument_type": "STOCK",
         "action": "BUY",
         "direction": "LONG",
-        "quantity": 10,
+        "quantity": 50,
         "order_type": "MARKET",
-        "price": 150.25,
+        "price": 245.0,
         "environment": "staging"
     }]
 })";
@@ -488,6 +546,59 @@ if(curl) {
     CURLcode res = curl_easy_perform(curl);
     curl_easy_cleanup(curl);
     curl_slist_free_all(headers);
+}\`
+            };
+
+            const statusCodeExamples = {
+                'curl-status': \`# Query signal status
+curl "\${apiUrl.replace('/signals', '/signal_status')}?signal_id=sig_1770912665_6898_912647_1770912665" | jq .
+
+# Get just the summary
+curl "\${apiUrl.replace('/signals', '/signal_status')}?signal_id=YOUR_SIGNAL_ID" | jq '.summary'\`,
+
+                'python-status': \`import requests
+
+# Query signal status
+signal_id = "sig_1770912665_6898_912647_1770912665"
+response = requests.get(
+    "\${apiUrl.replace('/signals', '/signal_status')}",
+    params={"signal_id": signal_id}
+)
+
+if response.status_code == 200:
+    data = response.json()
+    print(f"📊 Signal Status: {data['summary']['cerebro_status']}")
+    print(f"🎯 Execution: {data['summary']['execution_status']}")
+    print(f"💰 Filled: {data['summary']['total_quantity_filled']} @ {data['summary']['weighted_avg_price']}")
+else:
+    print(f"❌ Error: {response.text}")\`,
+
+                'javascript-status': \`// Query signal status
+const signalId = "sig_1770912665_6898_912647_1770912665";
+const response = await fetch(
+    \\\`\${apiUrl.replace('/signals', '/signal_status')}?signal_id=\\\${signalId}\\\`
+);
+
+if (response.ok) {
+    const data = await response.json();
+    console.log(\\\`📊 Signal Status: \\\${data.summary.cerebro_status}\\\`);
+    console.log(\\\`🎯 Execution: \\\${data.summary.execution_status}\\\`);
+    console.log(\\\`💰 Filled: \\\${data.summary.total_quantity_filled} @ \\\${data.summary.weighted_avg_price}\\\`);
+} else {
+    console.log("❌ Error:", await response.text());
+}\`,
+
+                'cpp-status': \`#include <curl/curl.h>
+#include <string>
+
+std::string url = "\${apiUrl.replace('/signals', '/signal_status')}?signal_id=sig_1770912665_6898_912647_1770912665";
+
+CURL *curl = curl_easy_init();
+if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
 }\`
             };
 
@@ -518,6 +629,21 @@ if(curl) {
                 });
             }
 
+            function showStatusCode(language) {
+                const statusContainer = document.getElementById('status-code-examples');
+                const code = statusCodeExamples[language];
+
+                statusContainer.innerHTML = \`
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>\${code}</code></pre>
+                    </div>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.7;">
+                        <strong>Note:</strong> No authentication required for querying signal status
+                    </p>
+                \`;
+            }
+
             // Signal examples by asset class
             const signalExamples = {
                 equity_simple: {
@@ -535,9 +661,9 @@ if(curl) {
         "instrument_type": "STOCK",
         "action": "BUY",
         "direction": "LONG",
-        "quantity": 10,
+        "quantity": 50,
         "order_type": "MARKET",
-        "price": 150.25,
+        "price": 245.0,
         "environment": "staging"
     }]
 }\`
@@ -558,9 +684,9 @@ if(curl) {
             "instrument_type": "STOCK",
             "action": "BUY",
             "direction": "LONG",
-            "quantity": 10,
+            "quantity": 50,
             "order_type": "MARKET",
-            "price": 150.00,
+            "price": 245.0,
             "environment": "staging"
         },
         {
@@ -570,7 +696,7 @@ if(curl) {
             "direction": "SHORT",
             "quantity": 10,
             "order_type": "MARKET",
-            "price": 500.00,
+            "price": 145.0,
             "environment": "staging"
         }
     ]
@@ -609,13 +735,13 @@ if(curl) {
     "account_equity": 75000,
     "signal_type": "ENTRY",
     "signal_legs": [{
-        "instrument": "BTC",
+        "instrument": "BTC-USD",
         "instrument_type": "CRYPTO",
         "action": "BUY",
         "direction": "LONG",
         "quantity": 0.5,
         "order_type": "MARKET",
-        "price": 95000.00,
+        "price": 70000.00,
         "environment": "staging"
     }]
 }\`
@@ -726,12 +852,22 @@ if(curl) {
                 });
             }
 
-            // Language selector functionality (Quick Start)
+            // Language selector functionality (Quick Start - POST signals)
             document.querySelectorAll('[data-lang]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('[data-lang]').forEach(b => b.classList.remove('active'));
+                    // Get the parent section to determine which section we're in
+                    const parentSection = btn.closest('.section');
+                    const isStatusSection = parentSection.querySelector('#status-code-examples') !== null;
+                    
+                    // Only update buttons in the same section
+                    parentSection.querySelectorAll('[data-lang]').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    showCode(btn.dataset.lang);
+                    
+                    if (isStatusSection) {
+                        showStatusCode(btn.dataset.lang);
+                    } else {
+                        showCode(btn.dataset.lang);
+                    }
                 });
             });
 
@@ -747,6 +883,7 @@ if(curl) {
 
             // Initialize with curl example and all asset classes
             showCode('curl');
+            showStatusCode('curl-status');
             showSignalExamples('all');
         </script>
     </body>
