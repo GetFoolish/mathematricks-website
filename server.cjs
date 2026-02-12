@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { handler: signalsHandler } = require('./netlify/functions/signals.cjs');
 const { handler: signalsDocHandler } = require('./netlify/functions/signals_documentation.cjs');
+const { handler: signalStatusHandler } = require('./netlify/functions/signal_status.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,10 +60,12 @@ function netlifyToExpress(handler) {
 // Mount signal endpoints
 app.all('/api/v1/signals', netlifyToExpress(signalsHandler));
 app.all('/api/v1/signals/documentation', netlifyToExpress(signalsDocHandler));
+app.all('/api/v1/signal_status', netlifyToExpress(signalStatusHandler));
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Signal Receiver API running on port ${PORT}`);
     console.log(`📡 POST signals to: http://localhost:${PORT}/api/v1/signals`);
     console.log(`📖 Documentation: http://localhost:${PORT}/api/v1/signals/documentation`);
+    console.log(`📊 Signal Status: http://localhost:${PORT}/api/v1/signal_status?signal_id=xxx`);
 });
