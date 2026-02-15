@@ -5,13 +5,15 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (including express and cors for server)
+# Install dependencies
 RUN npm install && \
     npm install express cors
 
-# Copy Netlify functions and server
-COPY netlify/ ./netlify/
-COPY server.cjs ./
+# Copy source files
+COPY . .
+
+# Build Vite app
+RUN npm run build
 
 # Expose port
 EXPOSE 3000

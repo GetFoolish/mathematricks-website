@@ -374,7 +374,58 @@ exports.handler = async (event, context) => {
             </div>
 
             <div class="section">
-                <h2>📊 Signal Examples</h2>
+                <h2>� Query Open Positions</h2>
+                <p>Get all currently open positions for a specific strategy. Returns active positions with entry details and current status.</p>
+
+                <div class="language-selector">
+                    <button class="lang-btn active" data-lang="curl-positions">curl</button>
+                    <button class="lang-btn" data-lang="python-positions">Python</button>
+                    <button class="lang-btn" data-lang="javascript-positions">JavaScript</button>
+                    <button class="lang-btn" data-lang="cpp-positions">C++</button>
+                </div>
+
+                <div class="url-section">
+                    <h3>📍 API Endpoint (GET)</h3>
+                    <p>${apiUrl.replace('/signals', '/open_positions')}?strategy_id=YOUR_STRATEGY_ID</p>
+                </div>
+
+                <div id="positions-code-examples">
+                    <!-- Positions code examples will be populated by JavaScript -->
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: #17a2b8;">Response Structure</h3>
+                    <pre style="background: white; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.9rem;"><code>{
+  "strategy_id": "my-strategy",
+  "total_open_positions": 2,
+  "positions": [
+    {
+      "signal_id": "sig_001",
+      "instrument": "AAPL",
+      "strategy_id": "my-strategy",
+      "environment": "staging",
+      "mode": "paper_live",
+      "position": {
+        "status": "OPEN",
+        "entry_quantity": 100,
+        "exit_quantity": 0
+      },
+      "entry": {
+        "status": "FILLED",
+        "quantity_filled": 100,
+        "avg_fill_price": 150.25,
+        "filled_at": "2026-02-14T12:00:00.000Z"
+      },
+      "created_at": "2026-02-14T12:00:00.000Z"
+    }
+  ],
+  "query_time": "2026-02-14T18:30:00.000Z"
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>�📊 Signal Examples</h2>
                 <p>Real-world signal examples for different asset classes:</p>
 
                 <div class="language-selector" style="margin-bottom: 2rem;">
@@ -602,6 +653,70 @@ if(curl) {
 }\`
             };
 
+            const positionsCodeExamples = {
+                'curl-positions': \`# Query open positions for a strategy
+curl "\${apiUrl.replace('/signals', '/open_positions')}?strategy_id=my-strategy" | jq .
+
+# Count open positions
+curl "\${apiUrl.replace('/signals', '/open_positions')}?strategy_id=my-strategy" | jq '.total_open_positions'\`,
+
+                'python-positions': \`import requests
+
+# Query open positions
+strategy_id = "my-strategy"
+response = requests.get(
+    "\${apiUrl.replace('/signals', '/open_positions')}",
+    params={"strategy_id": strategy_id}
+)
+
+if response.status_code == 200:
+    data = response.json()
+    print(f"📊 Total Open Positions: {data['total_open_positions']}")
+    
+    for position in data['positions']:
+        print(f"\\n🎯 {position['instrument']}")
+        print(f"   Signal ID: {position['signal_id']}")
+        print(f"   Quantity: {position['entry']['quantity_filled']}")
+        print(f"   Avg Price: {position['entry']['avg_fill_price']}")
+        print(f"   Status: {position['position']['status']}")
+else:
+    print(f"❌ Error: {response.text}")\`,
+
+                'javascript-positions': \`// Query open positions
+const strategyId = "my-strategy";
+const response = await fetch(
+    \\\`\${apiUrl.replace('/signals', '/open_positions')}?strategy_id=\\\${strategyId}\\\`
+);
+
+if (response.ok) {
+    const data = await response.json();
+    console.log(\\\`📊 Total Open Positions: \\\${data.total_open_positions}\\\`);
+    
+    data.positions.forEach(position => {
+        console.log(\\\`\\n🎯 \\\${position.instrument}\\\`);
+        console.log(\\\`   Signal ID: \\\${position.signal_id}\\\`);
+        console.log(\\\`   Quantity: \\\${position.entry.quantity_filled}\\\`);
+        console.log(\\\`   Avg Price: \\\${position.entry.avg_fill_price}\\\`);
+        console.log(\\\`   Status: \\\${position.position.status}\\\`);
+    });
+} else {
+    console.log("❌ Error:", await response.text());
+}\`,
+
+                'cpp-positions': \`#include <curl/curl.h>
+#include <string>
+
+std::string url = "\${apiUrl.replace('/signals', '/open_positions')}?strategy_id=my-strategy";
+
+CURL *curl = curl_easy_init();
+if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+}\`
+            };
+
             function showCode(language) {
                 const codeContainer = document.getElementById('code-examples');
                 const code = codeExamples[language];
@@ -640,6 +755,21 @@ if(curl) {
                     </div>
                     <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.7;">
                         <strong>Note:</strong> No authentication required for querying signal status
+                    </p>
+                \`;
+            }
+
+            function showPositionsCode(language) {
+                const positionsContainer = document.getElementById('positions-code-examples');
+                const code = positionsCodeExamples[language];
+
+                positionsContainer.innerHTML = \`
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre><code>\${code}</code></pre>
+                    </div>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.7;">
+                        <strong>Note:</strong> Returns all positions with status "OPEN" for the specified strategy
                     </p>
                 \`;
             }
@@ -858,6 +988,7 @@ if(curl) {
                     // Get the parent section to determine which section we're in
                     const parentSection = btn.closest('.section');
                     const isStatusSection = parentSection.querySelector('#status-code-examples') !== null;
+                    const isPositionsSection = parentSection.querySelector('#positions-code-examples') !== null;
                     
                     // Only update buttons in the same section
                     parentSection.querySelectorAll('[data-lang]').forEach(b => b.classList.remove('active'));
@@ -865,6 +996,8 @@ if(curl) {
                     
                     if (isStatusSection) {
                         showStatusCode(btn.dataset.lang);
+                    } else if (isPositionsSection) {
+                        showPositionsCode(btn.dataset.lang);
                     } else {
                         showCode(btn.dataset.lang);
                     }
@@ -884,6 +1017,7 @@ if(curl) {
             // Initialize with curl example and all asset classes
             showCode('curl');
             showStatusCode('curl-status');
+            showPositionsCode('curl-positions');
             showSignalExamples('all');
         </script>
     </body>

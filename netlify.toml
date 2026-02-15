@@ -40,6 +40,18 @@
   to = "/api/v1/signals/documentation"
   status = 301
 
+# Signal Status API
+[[redirects]]
+  from = "/api/v1/signal_status"
+  to = "/.netlify/functions/signal_status"
+  status = 200
+
+# Open Positions API
+[[redirects]]
+  from = "/api/v1/open_positions"
+  to = "/.netlify/functions/open_positions"
+  status = 200
+
 # Legacy redirects (backward compatibility - can remove later)
 [[redirects]]
   from = "/api/signals"
