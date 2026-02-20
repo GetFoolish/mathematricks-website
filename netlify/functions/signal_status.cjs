@@ -118,8 +118,52 @@ async function handleGet(event) {
 
     console.log(`✅ Found signal: ${signalId}`);
 
-    // Extract key status information
-    const firstLeg = signalDoc.legs && signalDoc.legs[0];
+    // DEBUG: Log document structure
+    console.log('signal_legs exists:', 'signal_legs' in signalDoc);
+    console.log('signal_legs type:', typeof signalDoc.signal_legs);
+    console.log('signal_legs length:', signalDoc.signal_legs?.length);
+    console.log('signal_status exists:', 'signal_status' in signalDoc);
+    
+    // Aggregate statuses across ALL legs (not just first leg)
+    function aggregateLegStatuses(legs) {
+      if (!legs || legs.length === 0) {
+        console.log('⚠️  No legs found in signal');
+        return { cerebro: 'PENDING', execution: 'PENDING', totalFilled: 0 };
+      }
+      
+      console.log(`📊 Aggregating status across ${legs.length} legs`);
+      
+      // Check cerebro: all APPROVED → "APPROVED", any REJECTED → "REJECTED", else "PENDING"
+      const cerebroStatuses = legs.map(leg => leg.cerebro?.status).filter(Boolean);
+      let cerebroStatus = 'PENDING';
+      if (cerebroStatuses.length > 0) {
+        if (cerebroStatuses.every(s => s === 'APPROVED')) cerebroStatus = 'APPROVED';
+        else if (cerebroStatuses.some(s => s === 'REJECTED')) cerebroStatus = 'REJECTED';
+        console.log(`🧠 Cerebro statuses: [${cerebroStatuses.join(', ')}] → ${cerebroStatus}`);
+      }
+      
+      // Check execution: all Filled → "FILLED", any failed → "FAILED", else "PENDING"  
+      const execStatuses = legs.map(leg => leg.execution?.status).filter(Boolean);
+      let execStatus = 'PENDING';
+      if (execStatuses.length > 0) {
+        if (execStatuses.every(s => s === 'Filled' || s === 'FILLED')) execStatus = 'FILLED';
+        else if (execStatuses.some(s => s && (s.toLowerCase().includes('reject') || s.toLowerCase().includes('fail')))) execStatus = 'FAILED';
+        console.log(`⚡ Execution statuses: [${execStatuses.join(', ')}] → ${execStatus}`);
+      }
+      
+      // Sum total filled quantity across all legs
+      const totalFilled = legs.reduce((sum, leg) => sum + (leg.execution?.total_quantity_filled || 0), 0);
+      
+      return { cerebro: cerebroStatus, execution: execStatus, totalFilled };
+    }
+    
+    // Aggregate across all legs
+    const aggregated = aggregateLegStatuses(signalDoc.signal_legs);
+    
+    // Use root-level signal_status for position info (already aggregated by system)
+    const positionStatus = signalDoc.signal_status?.status || 'PENDING';
+    console.log(`📊 Position status: ${positionStatus}`);
+    
     const statusSummary = {
       signal_id: signalDoc.signal_id,
       strategy_id: signalDoc.strategy_id,
@@ -127,19 +171,20 @@ async function handleGet(event) {
       mode: signalDoc.mode,
       instrument: signalDoc.instrument,
       
-      // Cerebro decision
-      cerebro_status: firstLeg?.decision?.status || 'PENDING',
-      cerebro_reason: firstLeg?.decision?.reason || null,
-      cerebro_timestamp: firstLeg?.decision?.timestamp || null,
+      // Aggregated cerebro status across all legs
+      cerebro_status: aggregated.cerebro,
       
-      // Execution status
-      execution_status: firstLeg?.execution?.status || 'PENDING',
-      execution_error: firstLeg?.execution?.error_reason || null,
-      total_quantity_filled: firstLeg?.execution?.total_quantity_filled || 0,
-      weighted_avg_price: firstLeg?.execution?.weighted_avg_price || null,
+      // Aggregated execution status across all legs
+      execution_status: aggregated.execution,
       
-      // Position status
-      position_status: signalDoc.position?.status || 'PENDING',
+      // Position status from root-level signal_status (already aggregated)
+      position_status: positionStatus,
+      
+      // Quantities from root-level signal_status
+      entry_quantity: signalDoc.signal_status?.entry_quantity || 0,
+      exit_quantity: signalDoc.signal_status?.exit_quantity || 0,
+      remaining_quantity: signalDoc.signal_status?.remaining_quantity || 0,
+      total_quantity_filled: aggregated.totalFilled,
       
       // Timestamps
       created_at: signalDoc.created_at,
