@@ -198,10 +198,13 @@ async function handlePost(event) {
         const isStaging = host.includes('staging') || isLocalhost;
         const environment = isStaging ? 'staging' : 'production';
 
-        // Normalize signal_legs → signal for MongoDB (signal_ingestion expects 'signal' field)
+        // Keep signal_legs as-is (no transformation needed)
         const normalizedData = { ...requestData };
-        if (normalizedData.signal_legs && !normalizedData.signal) {
-            normalizedData.signal = normalizedData.signal_legs;
+
+        // Remove legacy "signal" field - only keep "signal_legs"
+        if (normalizedData.signal) {
+            console.log('Removing legacy "signal" field (keeping signal_legs only)');
+            delete normalizedData.signal;
         }
 
         // Prepare signal document for MongoDB
